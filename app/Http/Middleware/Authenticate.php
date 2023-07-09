@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Constants\EndPoints;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 
 class Authenticate extends Middleware

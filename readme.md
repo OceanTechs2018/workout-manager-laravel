@@ -1,11 +1,17 @@
 ## Perform following steps after clone
 
-- ## install **Composer** with following command 
-    - run command: **composer install**
+- ## install **Composer** with following command
     - to add required autoload file
+    - run command: **composer install**
 
 - ## copy **.env** file from **.env.example**
-    - to setup environment variable
+    - 1.Copy .env.example to .env:
+    - run command: **cp -a .env.example .env**
+    - 2.Generate a key:
+    - run command: **php artisan key:generate**
+    - then run command: **php artisan config:cache**
+    - 3.Only then run:
+    - run command: **php artisan serve**
 
 - ## add dataBase in **phpMyAdmin**
     - [Open PhpMyAdmin in Browser](http://localhost/phpmyadmin/).
