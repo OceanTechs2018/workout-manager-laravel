@@ -1,20 +1,3 @@
-| FirstName     | LastName      | City     |
-| ------------- | ------------- | -------- |
-| John          | Test1         | NewYork  |
-| Bob           | Test2         | Toronto  |
-
-
-
-
-| TimeZone     | Description        |
-| ------------- |--------------------|
-| ------------- |--------------------|
-
- | TimeZone                   | Description                                     |
- | ~~~~~~~~~~~~~~~~~~~~~~~~~~ | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
- | Pacific/Midway             | (GMT-11:00) Midway Island                       |
-
-
 ## Perform following steps after clone
 
 - ## install **Composer** with following command
