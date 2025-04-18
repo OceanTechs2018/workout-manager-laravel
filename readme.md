@@ -83,6 +83,8 @@ app/
 ## Tenant Migration Command List
 
 ```
+php artisan migrateTenant
+
 php artisan migrateTenant:fresh
 
 php artisan migrateTenant:install
