@@ -152,7 +152,7 @@ php artisan migrateTenant:status
 
     brew unlink php@8.2
 
- 2. Second Link New PHP Version with
+2. Second Link New PHP Version with
   - run Command: [**brew link --overwrite --force php@7.2**]()
     
     
