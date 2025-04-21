@@ -35,6 +35,19 @@ database/
     - Store tenant migrations in a dedicated folder like:
         database/migrations/tenant.
 
+## 🧱 Tenant Migrations Guidelines
+
+> Important: All tenant-specific migrations must use `Schema::connection('tenant')`.
+
+- Migrations for tenants are stored under `database/migrations/tenant/`.
+- Never use the default connection for tenant schemas.
+- Do not reference landlord tables or data within tenant migrations.
+- To run all tenant migrations along with landlord, use:
+```
+php artisan migrateTenant
+```
+> ❗ Always double-check your migration targets before deploying in production.
+
 ## Example Migration for Tenants:
 ```
 use Illuminate\Database\Migrations\Migration;
