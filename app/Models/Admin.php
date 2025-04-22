@@ -9,12 +9,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Constants\Tables;
+use Laravel\Passport\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
 
 class Admin extends BaseAuthenticatableModel
 {
     use HasFactory, SoftDeletes;
+    use Notifiable, HasApiTokens;
 
-    protected $table = Tables::ADMIN;
+    protected $table = Tables::ADMINS;
 
     protected $guarded = [];
 
@@ -28,5 +31,6 @@ class Admin extends BaseAuthenticatableModel
 
     protected $hidden = [
         'password',
+        'remember_token',
     ];
 }

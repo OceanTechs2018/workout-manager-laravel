@@ -71,7 +71,7 @@ abstract class BaseController extends Controller
      */
     public function getValidationErrorInFormat($errArray)
     {
-        if ($this->errorResponseType == 1) {
+        if ($this->errorResponseType == 0) {
             return $this->validationErrorsToListOfErrorModel($errArray);
         } else {
             return $this->validationErrorsSingleModel($errArray);
@@ -119,9 +119,9 @@ abstract class BaseController extends Controller
         return response()->json($returnData, $code);
     }
 
-    public function sendSuccessResult()
+    public function sendSuccessResult($code = ResponseCodes::SUCCESS)
     {
-        return $this->getResponce($this->getSuccessResult(), $this->successCode);
+        return $this->getResponce($this->getSuccessResult(), $code);
     }
 
     public function sendFailResult()

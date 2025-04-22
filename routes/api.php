@@ -19,19 +19,41 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post(EndPoints::admin_register, [AdminController::class, 'createTenant'])->name(EndPoints::unauthorised);
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
 
+
+Route::group(["middleware" => "auth:api"], function () {
+
+});
+
 /**
  *
  *  unauthorised:api = Here "auth" is middleware define
  *                     in 'Kernel.php' with Class 'Authenticate.php'
  */
-Route::group(["middleware" => "auth:api"], function () {
+Route::prefix('admin')->group(function () {
+    Route::post(EndPoints::login, [AdminController::class, 'login']);
+    // Route::post(EndPoints::register, [AdminController::class, 'register']);
+    // Route::middleware('auth:admin-api')->get('profile', [AdminController::class, 'profile']);
+
+    Route::group(["middleware" => "auth:admin-api"], function () {
+        Route::get(EndPoints::profile, [AdminController::class, 'profile']);
+        Route::post(EndPoints::create_tenant, [AdminController::class, 'createTenant']);
+    });
+});
+
+Route::prefix('user')->group(function () {
+    Route::post(EndPoints::login, [UserController::class, 'login']);
+    Route::post(EndPoints::register, [UserController::class, 'register']);
+    // Route::middleware('auth:user-api')->get('profile', [UserController::class, 'profile']);
+
+    Route::group(["middleware" => "auth:user-api"], function () {
+        Route::get(EndPoints::profile, [UserController::class, 'profile']);
+    });
 
 });
 

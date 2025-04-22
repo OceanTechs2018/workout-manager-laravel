@@ -6,12 +6,31 @@ namespace App\Constants;
 
 class EndPoints
 {
+
+
+    /**
+     * ========================================================================
+     * Common Services
+     * ========================================================================
+     */
+    const register = '/register';
+    const login = '/login';
+    const forgotPassword = '/forgotPassword';
+    const forgotPasswordCustom = '/forgotPasswordCustom';
+
+    const detail = '/detail';
+    const profile = '/profile';
+    const changePassword = '/changePassword';
+    const updateProfile = '/updateProfile';
+    const logout = '/logout';
+    const list = '/list';
+
     /**
      * ========================================================================
      * Admin Services
      * ========================================================================
      */
-    const admin_register = '/admin/createTenant';
+    const create_tenant = '/createTenant';
 
 
     /**

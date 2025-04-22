@@ -15,5 +15,6 @@ class Keys
     const swift_trasport_exception = 'swift_trasport_exception';
     const exception = 'exception';
     const USER = 'user';
+    const ADMIN = 'admin';
     const EMAIL = 'email';
 }

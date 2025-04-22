@@ -3,16 +3,74 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Constants\Columns;
+use App\Constants\Keys;
 use App\Http\Controllers\BaseController;
+use App\Models\Admin;
 use App\Models\Tenant;
 use App\Models\TenantInfo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
 
 class AdminController extends BaseController
 {
-    //
+
+    public function register(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:admins',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendValidationError($validator->errors());
+        }
+
+        $admin = Admin::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        $token = $admin->createToken('AdminAccessToken')->accessToken;
+
+        $data = [];
+        $data[KEYS::ADMIN] = $admin;
+        $data[KEYS::TOKEN] = $token;
+        $this->addSuccessResultKeyValue(Keys::DATA, $data);
+        $this->setSuccessMessage('Registered successfully.');
+        return $this->sendSuccessResult(code: 201);
+
+        // return response()->json(['token' => $token], 201);
+    }
+
+    public function login(Request $request)
+    {
+        $admin = Admin::where('email', $request->email)->first();
+
+        if (!$admin || !Hash::check($request->password, $admin->password)) {
+            return response()->json(['error' => 'Invalid Credentials'], 401);
+        }
+
+        $token = $admin->createToken('AdminAccessToken')->accessToken;
+
+        $data = [];
+        $data[KEYS::ADMIN] = $admin;
+        $data[KEYS::TOKEN] = $token;
+        $this->addSuccessResultKeyValue(Keys::DATA, $data);
+        $this->setSuccessMessage('Login successfully.');
+        return $this->sendSuccessResult(code: 201);
+    }
+
+    public function profile(Request $request)
+    {
+        $admin = auth()->user();
+        $this->addSuccessResultKeyValue(Keys::DATA, $admin);
+        return $this->sendSuccessResult();
+    }
 
     public function createTenant(Request $request)
     {
