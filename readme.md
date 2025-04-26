@@ -37,9 +37,16 @@ database/
 
 ## 🧱 Tenant Migrations Guidelines
 
-> Important: All tenant-specific migrations must use `Schema::connection('tenant')`.
+> Important: All tenant-specific migrations must use 
+```
+Schema::connection('tenant')->
+```
 
 - Migrations for tenants are stored under `database/migrations/tenant/`.
+- Create migrations for tenants using command 
+```
+php artisan make:migration {migration_name} --path=database/migrations/tenant
+```
 - Never use the default connection for tenant schemas.
 - Do not reference landlord tables or data within tenant migrations.
 - To run all tenant migrations along with landlord, use:
