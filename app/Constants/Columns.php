@@ -23,6 +23,8 @@ class Columns
     const remember_token = 'remember_token';
     const updated_at = 'updated_at';
     const created_at = 'created_at';
+    const limit = 'limit';
+    const page = 'page';
 
 
     /**
@@ -53,5 +55,32 @@ class Columns
      */
     const token = 'token';
 
+    /**
+     * Tables::FOCUS_AREAS Table Columns
+     */
+    const display_name = 'display_name';
 
+    /**
+     * Tables::EXERCISES Table Columns
+     */
+    const male_video_path = 'male_video_path';
+    const female_video_path = 'female_video_path';
+    const preparation_text = 'preparation_text';
+
+    /**
+     * Tables::EXERCISE_FOCUS_AREAS Table Columns
+     */
+    const exercise_id = 'exercise_id';
+    const focus_area_id = 'focus_area_id';
+
+    /**
+     * Tables::EXERCISE_EXECUTION_POINTS Table Columns
+     */
+    const text = 'text';
+    const index = 'index';
+
+    /**
+     * Tables::EXERCISE_EQUIPMENTS Table Columns
+     */
+    const equipment_id = 'equipment_id';
 }

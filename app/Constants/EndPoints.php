@@ -38,4 +38,81 @@ class EndPoints
     const password_reset = 'password/reset';
     const password_update = 'password/update';
 
+    /**
+     * ========================================================================
+     * Equipments Route
+     * ========================================================================
+     */
+    const list_equipment = '/equipment';
+    const show_equipment = '/equipment/{id}';
+    const add_equipment = '/equipment';
+    const update_equipment = '/equipment/{id}';
+    const delete_equipment = '/equipment/{id}';
+
+
+    /**
+     * ========================================================================
+     * Focus Area Route
+     * ========================================================================
+     */
+    const list_focus_area = '/focus_area';
+    const show_focus_area = '/focus_area/{id}';
+    const add_focus_area = '/focus_area';
+    const update_focus_area = '/focus_area/{id}';
+    const delete_focus_area = '/focus_area/{id}';
+
+    /**
+     * ========================================================================
+     * Exercise Route
+     * ========================================================================
+     */
+    const list_exercise = '/exercise';
+    const show_exercise = '/exercise/{id}';
+    const add_exercise = '/exercise';
+    const update_exercise = '/exercise/{id}';
+    const delete_exercise = '/exercise/{id}';
+
+    /**
+     * ========================================================================
+     * Exercise Execution Point Route
+     * ========================================================================
+     */
+    const list_exercise_execution_point = '/exercise_execution_point';
+    const show_exercise_execution_point = '/exercise_execution_point/{id}';
+    const add_exercise_execution_point = '/exercise_execution_point';
+    const update_exercise_execution_point = '/exercise_execution_point/{id}';
+    const delete_exercise_execution_point = '/exercise_execution_point/{id}';
+
+    /**
+     * ========================================================================
+     * Exercise Focus Area Route
+     * ========================================================================
+     */
+    const list_exercise_focus_area = '/exercise_focus_area';
+    const show_exercise_focus_area = '/exercise_focus_area/{id}';
+    const add_exercise_focus_area = '/exercise_focus_area';
+    const update_exercise_focus_area = '/exercise_focus_area/{id}';
+    const delete_exercise_focus_area = '/exercise_focus_area/{id}';
+
+    /**
+     * ========================================================================
+     * Exercise Key Tips Route
+     * ========================================================================
+     */
+    const list_exercise_key_tips = '/exercise_key_tips';
+    const show_exercise_key_tips = '/exercise_key_tips/{id}';
+    const add_exercise_key_tips = '/exercise_key_tips';
+    const update_exercise_key_tips = '/exercise_key_tips/{id}';
+    const delete_exercise_key_tips = '/exercise_key_tips/{id}';
+
+    /**
+     * ========================================================================
+     * Exercise Equipment Route
+     * ========================================================================
+     */
+    const list_exercise_equipment = '/exercise_equipment';
+    const show_exercise_equipment = '/exercise_equipment/{id}';
+    const add_exercise_equipment = '/exercise_equipment';
+    const update_exercise_equipment = '/exercise_equipment/{id}';
+    const delete_exercise_equipment = '/exercise_equipment/{id}';
 }
