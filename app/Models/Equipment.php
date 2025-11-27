@@ -9,8 +9,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Equipment extends Model
 {
+
+    // jignesh chnaged file 
     use HasFactory;
-    
+
     protected $table = Tables::EQUIPMENTS;
     protected $guarded = [];
 }
