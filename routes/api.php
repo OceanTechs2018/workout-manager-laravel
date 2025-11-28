@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ExerciseExecutionPointController;
 use App\Http\Controllers\Api\ExerciseFocusAreaController;
 use App\Http\Controllers\Api\ExerciseKeyTipController;
 use App\Http\Controllers\Api\FocusAreaController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -150,3 +151,8 @@ Route::post(EndPoints::add_exercise_equipment, [ExerciseEquipmentController::cla
 Route::post(EndPoints::update_exercise_equipment, [ExerciseEquipmentController::class, 'update']);
 Route::delete(EndPoints::delete_exercise_equipment, [ExerciseEquipmentController::class, 'destroy']);
 
+// User Authentication
+
+Route::post(EndPoints::user_register, [UserController::class, 'register']);
+Route::post(EndPoints::user_login, [UserController::class, 'login']);
+Route::post(EndPoints::user_logout, [UserController::class, 'logout']);
