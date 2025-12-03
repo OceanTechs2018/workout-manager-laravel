@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\ExerciseFocusAreaController;
 use App\Http\Controllers\Api\ExerciseKeyTipController;
 use App\Http\Controllers\Api\FocusAreaController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\UserDashboardController;
 use App\Http\Controllers\Api\WorkoutController;
 use App\Http\Controllers\Api\WorkoutExerciseController;
 use Illuminate\Http\Request;
@@ -188,6 +189,13 @@ Route::get(EndPoints::show_workout_exercise, [WorkoutExerciseController::class, 
 Route::post(EndPoints::add_workout_exercise, [WorkoutExerciseController::class, 'store']);
 Route::post(EndPoints::update_workout_exercise, [WorkoutExerciseController::class, 'update']);
 Route::delete(EndPoints::delete_workout_exercise, [WorkoutExerciseController::class, 'destroy']);
+
+/**
+ * ========================================================================
+ * user Dashboard Services
+ * ========================================================================
+ */
+Route::get(EndPoints::get_user_home, [UserDashboardController::class, 'userHomeApi']);
 
 // User Authentication
 

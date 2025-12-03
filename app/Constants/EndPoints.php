@@ -148,4 +148,11 @@ class EndPoints
     const add_exercise_equipment = '/exercise_equipment';
     const update_exercise_equipment = '/exercise_equipment/{id}';
     const delete_exercise_equipment = '/exercise_equipment/{id}';
+
+    /**
+     * ========================================================================
+     * User dashboard Route
+     * ========================================================================
+     */
+    const get_user_home = '/user-home';
 }
