@@ -1,6 +1,9 @@
 /node_modules
 /public/hot
 /public/storage
+/public/female
+/public/male
+/public/focus_areas
 /storage/*.key
 /vendor
 .env
