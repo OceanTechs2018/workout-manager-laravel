@@ -9,6 +9,7 @@ use App\Http\Controllers\BaseController;
 use App\Models\FocusArea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class FocusAreaController extends BaseController
 {
@@ -51,8 +52,9 @@ class FocusAreaController extends BaseController
     public function store(Request $request)
     {
         $rules = [
-            Columns::name         => 'required|string|max:255',
+            Columns::name => 'required|string|max:255',
             Columns::display_name => 'required|string|max:255',
+            Columns::image_url => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // max 10MB
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -60,9 +62,16 @@ class FocusAreaController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
+        // Handle image upload
+        $imageFile = $request->file(Columns::image_url);
+        $imageFileName = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
+        $imageFile->move(public_path('focus_areas'), $imageFileName);
+        $imagePath = 'focus_areas/' . $imageFileName;
+
         $focusArea = FocusArea::create([
-            Columns::name         => $request->input(Columns::name),
+            Columns::name => $request->input(Columns::name),
             Columns::display_name => $request->input(Columns::display_name),
+            Columns::image_url => $imagePath,
         ]);
 
         $this->addSuccessResultKeyValue(Keys::DATA, $focusArea);
@@ -98,9 +107,11 @@ class FocusAreaController extends BaseController
             return $this->sendFailResult();
         }
 
+        // Validation rules
         $rules = [
-            Columns::name         => 'required|string|max:255',
+            Columns::name => 'required|string|max:255',
             Columns::display_name => 'required|string|max:255',
+            Columns::image_url => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -108,10 +119,34 @@ class FocusAreaController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        $focusArea->update([
-            Columns::name         => $request->input(Columns::name),
-            Columns::display_name => $request->input(Columns::display_name),
-        ]);
+        // Update name only if provided
+        if ($request->filled(Columns::name)) {
+            $focusArea->name = $request->input(Columns::name);
+        }
+
+        // Update display_name only if provided
+        if ($request->filled(Columns::display_name)) {
+            $focusArea->display_name = $request->input(Columns::display_name);
+        }
+
+        // If image is uploaded
+        if ($request->hasFile(Columns::image_url)) {
+
+            // Delete old image
+            if ($focusArea->image_url && file_exists(public_path($focusArea->image_url))) {
+                unlink(public_path($focusArea->image_url));
+            }
+
+            // Upload new image
+            $imageFile = $request->file(Columns::image_url);
+            $imageFileName = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
+            $imageFile->move(public_path('focus_areas'), $imageFileName);
+
+            $focusArea->image_url = 'focus_areas/' . $imageFileName;
+        }
+
+        // Save changes
+        $focusArea->save();
 
         $this->addSuccessResultKeyValue(Keys::DATA, $focusArea);
         $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Focus Area updated successfully.');

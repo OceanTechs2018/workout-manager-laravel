@@ -97,7 +97,7 @@ Route::delete(EndPoints::delete_equipment, [EquipmentController::class, 'destroy
 Route::get(EndPoints::list_focus_area, [FocusAreaController::class, 'index']);
 Route::get(EndPoints::show_focus_area, [FocusAreaController::class, 'show']);
 Route::post(EndPoints::add_focus_area, [FocusAreaController::class, 'store']);
-Route::patch(EndPoints::update_focus_area, [FocusAreaController::class, 'update']);
+Route::post(EndPoints::update_focus_area, [FocusAreaController::class, 'update']);
 Route::delete(EndPoints::delete_focus_area, [FocusAreaController::class, 'destroy']);
 
 /**
