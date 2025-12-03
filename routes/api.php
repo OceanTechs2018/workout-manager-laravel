@@ -3,6 +3,7 @@
 use App\Constants\ControllerMethods;
 use App\Constants\ControllerPaths;
 use App\Constants\EndPoints;
+use App\Http\Controllers\Api\ConfigController;
 use App\Http\Controllers\Api\EquipmentController;
 use App\Http\Controllers\Api\ExecutionPointController;
 use App\Http\Controllers\Api\ExerciseController;
@@ -12,6 +13,8 @@ use App\Http\Controllers\Api\ExerciseFocusAreaController;
 use App\Http\Controllers\Api\ExerciseKeyTipController;
 use App\Http\Controllers\Api\FocusAreaController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\WorkoutController;
+use App\Http\Controllers\Api\WorkoutExerciseController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -164,8 +167,32 @@ Route::post(EndPoints::add_exercise_equipment, [ExerciseEquipmentController::cla
 Route::post(EndPoints::update_exercise_equipment, [ExerciseEquipmentController::class, 'update']);
 Route::delete(EndPoints::delete_exercise_equipment, [ExerciseEquipmentController::class, 'destroy']);
 
+/**
+ * ========================================================================
+ * Workout Services
+ * ========================================================================
+ */
+Route::get(EndPoints::list_workout, [WorkoutController::class, 'index']);
+Route::get(EndPoints::show_workout, [WorkoutController::class, 'show']);
+Route::post(EndPoints::add_workout, [WorkoutController::class, 'store']);
+Route::post(EndPoints::update_workout, [WorkoutController::class, 'update']);
+Route::delete(EndPoints::delete_workout, [WorkoutController::class, 'destroy']);
+
+/**
+ * ========================================================================
+ * Workout Services
+ * ========================================================================
+ */
+Route::get(EndPoints::list_workout_exercise, [WorkoutExerciseController::class, 'index']);
+Route::get(EndPoints::show_workout_exercise, [WorkoutExerciseController::class, 'show']);
+Route::post(EndPoints::add_workout_exercise, [WorkoutExerciseController::class, 'store']);
+Route::post(EndPoints::update_workout_exercise, [WorkoutExerciseController::class, 'update']);
+Route::delete(EndPoints::delete_workout_exercise, [WorkoutExerciseController::class, 'destroy']);
+
 // User Authentication
 
 Route::post(EndPoints::user_register, [UserController::class, 'register']);
 Route::post(EndPoints::user_login, [UserController::class, 'login']);
 Route::post(EndPoints::user_logout, [UserController::class, 'logout']);
+
+Route::post('config-command', [ConfigController::class, 'runCommand']);

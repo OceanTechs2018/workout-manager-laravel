@@ -85,7 +85,7 @@ class EndPoints
 
     /**
      * ========================================================================
-     * Exercise Execution Point Route
+     * Execution Point Route
      * ========================================================================
      */
     const list_execution_point = '/execution_point';
@@ -93,6 +93,28 @@ class EndPoints
     const add_execution_point = '/execution_point';
     const update_execution_point = '/execution_point/{id}';
     const delete_execution_point = '/execution_point/{id}';
+
+    /**
+     * ========================================================================
+     * Workout Route
+     * ========================================================================
+     */
+    const list_workout = '/workout';
+    const show_workout = '/workout/{id}';
+    const add_workout = '/workout';
+    const update_workout = '/workout/{id}';
+    const delete_workout = '/workout/{id}';
+
+    /**
+     * ========================================================================
+     * Workout-Exercise Route
+     * ========================================================================
+     */
+    const list_workout_exercise = '/workout_exercise';
+    const show_workout_exercise = '/workout_exercise/{id}';
+    const add_workout_exercise = '/workout_exercise';
+    const update_workout_exercise = '/workout_exercise/{id}';
+    const delete_workout_exercise = '/workout_exercise/{id}';
 
     /**
      * ========================================================================
