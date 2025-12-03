@@ -18,5 +18,6 @@ class Tables
     const EXERCISE_KEY_TIPS = 'exercise_key_tips';
     const EXERCISE_EQUIPMENTS = 'exercise_equipments';
     const EQUIPMENTS = 'equipments';
+    const EXECUTION_POINTS = 'execution_points';
 
 }

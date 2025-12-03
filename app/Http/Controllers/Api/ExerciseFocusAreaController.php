@@ -57,8 +57,9 @@ class ExerciseFocusAreaController extends BaseController
     public function store(Request $request)
     {
         $rules = [
-            Columns::exercise_id    => 'required|integer|exists:exercises,id',
-            Columns::focus_area_id  => 'required|integer|exists:focus_areas,id',
+            Columns::exercise_id   => 'required|integer|exists:exercises,id',
+            Columns::focus_area_id => 'required|array|min:1',
+            Columns::focus_area_id . '.*' => 'integer|exists:focus_areas,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -66,13 +67,22 @@ class ExerciseFocusAreaController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        $record = ExerciseFocusArea::create([
-            Columns::exercise_id   => $request->input(Columns::exercise_id),
-            Columns::focus_area_id => $request->input(Columns::focus_area_id),
-        ]);
+        $exerciseId = $request->input(Columns::exercise_id);
+        $focusAreaIds = $request->input(Columns::focus_area_id);
 
-        $this->addSuccessResultKeyValue(Keys::DATA, $record);
-        $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Exercise focus area created successfully.');
+        $inserted = [];
+
+        foreach ($focusAreaIds as $focusAreaId) {
+            $record = ExerciseFocusArea::create([
+                Columns::exercise_id   => $exerciseId,
+                Columns::focus_area_id => $focusAreaId,
+            ]);
+
+            $inserted[] = $record;
+        }
+
+        $this->addSuccessResultKeyValue(Keys::DATA, $inserted);
+        $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Exercise focus areas added successfully.');
         return $this->sendSuccessResult();
     }
 
@@ -117,7 +127,8 @@ class ExerciseFocusAreaController extends BaseController
         // Validation rules
         $rules = [
             Columns::exercise_id => 'required|integer|exists:exercises,id',
-            Columns::focus_area_id => 'required|integer|exists:focus_areas,id',
+            'focus_area_ids' => 'required|array|min:1',
+            'focus_area_ids.*' => 'integer|exists:focus_areas,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -126,14 +137,38 @@ class ExerciseFocusAreaController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        // Update the record
-        $record->update([
-            Columns::exercise_id => $request->input(Columns::exercise_id),
-            Columns::focus_area_id => $request->input(Columns::focus_area_id),
-        ]);
+        $exerciseId = $request->input(Columns::exercise_id);
+        $newFocusAreaIds = $request->input('focus_area_ids');
 
-        $this->addSuccessResultKeyValue(Keys::DATA, $record);
-        $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Exercise focus area updated successfully.');
+        // Fetch existing focus areas for this exercise
+        $existingIds = ExerciseFocusArea::where(Columns::exercise_id, $exerciseId)
+            ->pluck(Columns::focus_area_id)
+            ->toArray();
+
+        // Determine which to add and which to remove
+        $toAdd = array_diff($newFocusAreaIds, $existingIds);
+        $toRemove = array_diff($existingIds, $newFocusAreaIds);
+
+        // Insert new focus areas
+        foreach ($toAdd as $faId) {
+            ExerciseFocusArea::create([
+                Columns::exercise_id => $exerciseId,
+                Columns::focus_area_id => $faId,
+            ]);
+        }
+
+        // Remove entries that are not in the new array
+        if (!empty($toRemove)) {
+            ExerciseFocusArea::where(Columns::exercise_id, $exerciseId)
+                ->whereIn(Columns::focus_area_id, $toRemove)
+                ->delete();
+        }
+
+        // Return updated list
+        $updated = ExerciseFocusArea::where(Columns::exercise_id, $exerciseId)->get();
+
+        $this->addSuccessResultKeyValue(Keys::DATA, $updated);
+        $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Exercise focus areas updated successfully.');
         return $this->sendSuccessResult();
     }
 

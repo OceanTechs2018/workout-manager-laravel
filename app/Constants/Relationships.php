@@ -10,4 +10,5 @@ class Relationships
     const EXERCISE = 'exercise';
     const FOCUS_AREA = 'focusArea';
     const EQUIPMENT = 'equipment';
+    const EXECUTION_POINT = 'executionPoint';
 }

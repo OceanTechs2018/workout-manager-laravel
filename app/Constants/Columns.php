@@ -83,4 +83,9 @@ class Columns
      * Tables::EXERCISE_EQUIPMENTS Table Columns
      */
     const equipment_id = 'equipment_id';
+
+    /**
+     * Tables::EXERCISE_EQUIPMENTS Table Columns
+     */
+    const execution_id = 'execution_id';
 }

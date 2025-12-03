@@ -13,11 +13,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create(Tables::EXERCISE_EXECUTION_POINTS, function (Blueprint $table) {
+        Schema::create(Tables::EXECUTION_POINTS, function (Blueprint $table) {
             $table->id();
             $table->text(Columns::text);
             $table->integer(Columns::index)->nullable();
-            $table->foreignId(Columns::exercise_id)->constrained(Tables::EXERCISES)->onDelete('cascade');
             $table->timestamps();
             // $table->softDeletes();
         });

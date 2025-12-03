@@ -4,6 +4,7 @@ use App\Constants\ControllerMethods;
 use App\Constants\ControllerPaths;
 use App\Constants\EndPoints;
 use App\Http\Controllers\Api\EquipmentController;
+use App\Http\Controllers\Api\ExecutionPointController;
 use App\Http\Controllers\Api\ExerciseController;
 use App\Http\Controllers\Api\ExerciseEquipmentController;
 use App\Http\Controllers\Api\ExerciseExecutionPointController;
@@ -105,6 +106,18 @@ Route::get(EndPoints::show_exercise, [ExerciseController::class, 'show']);
 Route::post(EndPoints::add_exercise, [ExerciseController::class, 'store']);
 Route::post(EndPoints::update_exercise, [ExerciseController::class, 'update']);
 Route::delete(EndPoints::delete_exercise, [ExerciseController::class, 'destroy']);
+
+
+/**
+ * ========================================================================
+ *  Execution Point Services
+ * ========================================================================
+ */
+Route::get(EndPoints::list_execution_point, [ExecutionPointController::class, 'index']);
+Route::get(EndPoints::show_execution_point, [ExecutionPointController::class, 'show']);
+Route::post(EndPoints::add_execution_point, [ExecutionPointController::class, 'store']);
+Route::post(EndPoints::update_execution_point, [ExecutionPointController::class, 'update']);
+Route::delete(EndPoints::delete_execution_point, [ExecutionPointController::class, 'destroy']);
 
 
 /**

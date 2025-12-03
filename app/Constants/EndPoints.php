@@ -85,6 +85,17 @@ class EndPoints
 
     /**
      * ========================================================================
+     * Exercise Execution Point Route
+     * ========================================================================
+     */
+    const list_execution_point = '/execution_point';
+    const show_execution_point = '/execution_point/{id}';
+    const add_execution_point = '/execution_point';
+    const update_execution_point = '/execution_point/{id}';
+    const delete_execution_point = '/execution_point/{id}';
+
+    /**
+     * ========================================================================
      * Exercise Focus Area Route
      * ========================================================================
      */
