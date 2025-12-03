@@ -8,6 +8,7 @@ use App\Constants\Messages;
 use App\Constants\Relationships;
 use App\Http\Controllers\BaseController;
 use App\Http\Controllers\Controller;
+use App\Models\Workout;
 use App\Models\WorkoutExercise;
 use Illuminate\Http\Request;
 use Validator;
@@ -19,17 +20,14 @@ class WorkoutExerciseController extends BaseController
      */
     public function index(Request $request)
     {
-        $query = WorkoutExercise::with([
-            Relationships::EXERCISE,
-            Relationships::EXECUTION_POINT
-        ]);
+        $query = Workout::with('exercises')->latest();
 
-        // Pagination optional
+        // Optional pagination
         if ($request->input('page', 0) == 0) {
-            $data = $query->latest()->get();
+            $data = $query->get();
         } else {
             $limit = $request->input(Columns::limit, 10);
-            $data = $query->latest()->paginate($limit);
+            $data = $query->paginate($limit);
         }
 
         if ($data->isEmpty()) {
@@ -45,6 +43,7 @@ class WorkoutExerciseController extends BaseController
 
         return $this->sendSuccessResult();
     }
+
 
     /**
      * Store execution point IDs for an exercise.
@@ -150,7 +149,7 @@ class WorkoutExerciseController extends BaseController
         return $this->sendSuccessResult();
     }
 
-        /**
+    /**
      * Display a specific execution mapping.
      */
     public function show(string $id)

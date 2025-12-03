@@ -13,4 +13,10 @@ class Workout extends Model
 
     protected $table = Tables::WORKOUTS;
     protected $guarded = [];
+
+    public function exercises()
+    {
+        return $this->belongsToMany(Exercise::class, 'workout_exercises', 'workout_id', 'exercise_id');
+    }
+
 }
