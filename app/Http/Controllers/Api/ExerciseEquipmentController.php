@@ -7,6 +7,7 @@ use App\Constants\Keys;
 use App\Constants\Messages;
 use App\Constants\Relationships;
 use App\Http\Controllers\BaseController;
+use App\Models\Exercise;
 use App\Models\ExerciseEquipment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -18,13 +19,13 @@ class ExerciseEquipmentController extends BaseController
      */
     public function index(Request $request)
     {
-        $query = ExerciseEquipment::with([Relationships::EXERCISE, Relationships::EQUIPMENT]);
+        $query = Exercise::with('equipments')->latest();
 
         if ($request->input('page', 0) == 0) {
-            $data = $query->latest()->get();
+            $data = $query->get();
         } else {
             $limit = $request->input(Columns::limit, 10);
-            $data = $query->latest()->paginate($limit);
+            $data = $query->paginate($limit);
         }
 
         if ($data->isEmpty()) {
@@ -48,7 +49,8 @@ class ExerciseEquipmentController extends BaseController
     {
         $rules = [
             Columns::exercise_id => 'required|integer|exists:exercises,id',
-            Columns::equipment_id => 'required|integer|exists:equipments,id',
+            Columns::equipment_id => 'required|array|min:1',
+            Columns::equipment_id . '.*' => 'integer|exists:equipments,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -56,13 +58,24 @@ class ExerciseEquipmentController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        $record = ExerciseEquipment::create([
-            Columns::exercise_id => $request->input(Columns::exercise_id),
-            Columns::equipment_id => $request->input(Columns::equipment_id),
-        ]);
+        $exerciseId = $request->input(Columns::exercise_id);
+        $equipmentIds = $request->input(Columns::equipment_id);
 
-        $this->addSuccessResultKeyValue(Keys::DATA, $record);
-        $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Exercise equipment created successfully.');
+        // Prepare bulk insert data
+        $insertData = [];
+        foreach ($equipmentIds as $equipmentId) {
+            $insertData[] = [
+                Columns::exercise_id => $exerciseId,
+                Columns::equipment_id => $equipmentId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        // Bulk insert
+        ExerciseEquipment::insert($insertData);
+
+        $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Exercise equipment added successfully.');
         return $this->sendSuccessResult();
     }
 
@@ -85,18 +98,11 @@ class ExerciseEquipmentController extends BaseController
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $exerciseId)
     {
-        $record = ExerciseEquipment::find($id);
-
-        if (!$record) {
-            $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
-            return $this->sendFailResult();
-        }
-
         $rules = [
-            Columns::exercise_id => 'required|integer|exists:exercises,id',
-            Columns::equipment_id => 'required|integer|exists:equipments,id',
+            Columns::equipment_id => 'required|array|min:1',
+            Columns::equipment_id . '.*' => 'integer|exists:equipments,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -104,15 +110,24 @@ class ExerciseEquipmentController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        $record->update([
-            Columns::exercise_id => $request->input(Columns::exercise_id),
-            Columns::equipment_id => $request->input(Columns::equipment_id),
-        ]);
+        $exercise = Exercise::find($exerciseId);
 
-        $this->addSuccessResultKeyValue(Keys::DATA, $record);
+        if (!$exercise) {
+            $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
+            return $this->sendFailResult();
+        }
+
+        // Incoming equipment IDs
+        $newEquipmentIds = $request->input(Columns::equipment_id);
+
+        // 🔥 Sync: add new, keep existing, remove missing
+        $exercise->equipments()->sync($newEquipmentIds);
+
+        $this->addSuccessResultKeyValue(Keys::DATA, $exercise->load('equipments'));
         $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Exercise equipment updated successfully.');
         return $this->sendSuccessResult();
     }
+
 
     /**
      * Remove the specified resource from storage.

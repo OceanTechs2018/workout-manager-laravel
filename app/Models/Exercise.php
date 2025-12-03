@@ -17,6 +17,12 @@ class Exercise extends Model
 
     public function focusAreas()
     {
-        return $this->hasMany(ExerciseFocusArea::class, Columns::exercise_id, Columns::id);
+        return $this->belongsToMany(FocusArea::class, 'exercise_focus_areas', 'exercise_id', 'focus_area_id')
+            ->withTimestamps();
+    }
+
+    public function equipments()
+    {
+        return $this->belongsToMany(Equipment::class, 'exercise_equipments', 'exercise_id', 'equipment_id');
     }
 }

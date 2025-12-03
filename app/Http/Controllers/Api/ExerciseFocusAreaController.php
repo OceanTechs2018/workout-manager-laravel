@@ -7,6 +7,7 @@ use App\Constants\Keys;
 use App\Constants\Messages;
 use App\Constants\Relationships;
 use App\Http\Controllers\BaseController;
+use App\Models\Exercise;
 use App\Models\ExerciseFocusArea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -19,14 +20,14 @@ class ExerciseFocusAreaController extends BaseController
      */
     public function index(Request $request)
     {
-        $query = ExerciseFocusArea::with([Relationships::EXERCISE, Relationships::FOCUS_AREA]);
+        $query = Exercise::with('focusAreas')->latest();
 
         // Optional pagination
         if ($request->input('page', 0) == 0) {
-            $data = $query->latest()->get();
+            $data = $query->get();
         } else {
             $limit = $request->input(Columns::limit, 10);
-            $data = $query->latest()->paginate($limit);
+            $data = $query->paginate($limit);
         }
 
         if ($data->isEmpty()) {
@@ -57,7 +58,7 @@ class ExerciseFocusAreaController extends BaseController
     public function store(Request $request)
     {
         $rules = [
-            Columns::exercise_id   => 'required|integer|exists:exercises,id',
+            Columns::exercise_id => 'required|integer|exists:exercises,id',
             Columns::focus_area_id => 'required|array|min:1',
             Columns::focus_area_id . '.*' => 'integer|exists:focus_areas,id',
         ];
@@ -74,7 +75,7 @@ class ExerciseFocusAreaController extends BaseController
 
         foreach ($focusAreaIds as $focusAreaId) {
             $record = ExerciseFocusArea::create([
-                Columns::exercise_id   => $exerciseId,
+                Columns::exercise_id => $exerciseId,
                 Columns::focus_area_id => $focusAreaId,
             ]);
 
