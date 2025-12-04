@@ -20,29 +20,29 @@ class CategoryController extends BaseController
      */
     public function index(Request $request)
     {
-        $query = Category::query();
+        $query = Category::with('workouts'); // eager load workouts
 
         // If page=0, return all records
         if ($request->input('page', 0) == 0) {
-            $category = $query->latest()->get();
+            $categories = $query->latest()->get();
 
-            if ($category->isEmpty()) {
+            if ($categories->isEmpty()) {
                 $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
                 return $this->sendFailResult();
             }
 
-            $this->addSuccessResultKeyValue(Keys::DATA, $category);
+            $this->addSuccessResultKeyValue(Keys::DATA, $categories);
         } else {
             // Paginate with optional limit (default 10)
             $limit = $request->input(Columns::limit, 10);
-            $category = $query->latest()->paginate($limit);
+            $categories = $query->latest()->paginate($limit);
 
-            if ($category->isEmpty()) {
+            if ($categories->isEmpty()) {
                 $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
                 return $this->sendFailResult();
             }
 
-            $this->addPaginationDataInSuccess($category);
+            $this->addPaginationDataInSuccess($categories);
         }
 
         return $this->sendSuccessResult();
@@ -58,6 +58,10 @@ class CategoryController extends BaseController
     {
         $rules = [
             Columns::display_name => 'required|string|max:255',
+
+            // NEW VALIDATION
+            'workout_ids' => 'required|array',
+            'workout_ids.*' => 'integer|exists:workouts,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -66,19 +70,24 @@ class CategoryController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        // Generate name from display_name
+        // Generate slug-like name
         $generatedName = Str::of($request->input(Columns::display_name))
             ->lower()
-            ->replace(' ', '_');
+            ->replace(' ', '_')
+            ->replaceMatches('/[^a-z0-9_]/', '');
 
-        // Create record
+        // Create category
         $category = Category::create([
             Columns::name => $generatedName,
             Columns::display_name => $request->input(Columns::display_name),
         ]);
 
-        $this->addSuccessResultKeyValue(Keys::DATA, $category);
-        $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Category created successfully.');
+        // 🔥 Sync workouts into category_workout pivot table
+        $category->workouts()->sync($request->workout_ids);
+
+        // Response
+        $this->addSuccessResultKeyValue(Keys::DATA, $category->load('workouts'));
+        $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Category created and workouts attached successfully.');
         return $this->sendSuccessResult();
     }
 
@@ -87,7 +96,7 @@ class CategoryController extends BaseController
      */
     public function show(string $id)
     {
-        $category = Category::find($id);
+        $category = Category::with('workouts')->find($id);
 
         if (!$category) {
             $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
@@ -112,6 +121,8 @@ class CategoryController extends BaseController
 
         $rules = [
             Columns::display_name => 'required|string|max:255',
+            'workout_ids' => 'nullable|array',
+            'workout_ids.*' => 'integer|exists:workouts,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -120,19 +131,24 @@ class CategoryController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        // Generate new name from display_name
+        // Generate new slug name
         $generatedName = Str::of($request->input(Columns::display_name))
             ->lower()
             ->replace(' ', '_');
 
-        // Update fields
-        $category->name = $generatedName;
-        $category->display_name = $request->input(Columns::display_name);
+        // Update category
+        $category->update([
+            Columns::name => $generatedName,
+            Columns::display_name => $request->input(Columns::display_name),
+        ]);
 
-        $category->save();
+        // Sync workouts if provided
+        if ($request->has('workout_ids')) {
+            $category->workouts()->sync($request->input('workout_ids'));
+        }
 
-        $this->addSuccessResultKeyValue(Keys::DATA, $category);
-        $this->addSuccessResultKeyValue(Keys::MESSAGE, "category updated successfully.");
+        $this->addSuccessResultKeyValue(Keys::DATA, $category->load('workouts'));
+        $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Category updated successfully.');
         return $this->sendSuccessResult();
     }
 

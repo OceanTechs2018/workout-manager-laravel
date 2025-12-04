@@ -19,6 +19,9 @@ return new class extends Migration
             $table->foreignId(Columns::equipment_id)->constrained(Tables::EQUIPMENTS)->onDelete('cascade');
             $table->timestamps();
             // $table->softDeletes();
+
+            $table->unique([Columns::exercise_id, Columns::equipment_id]);
+
         });
     }
 

@@ -19,6 +19,8 @@ return new class extends Migration
             $table->foreignId(Columns::focus_area_id)->constrained(Tables::FOCUS_AREAS)->onDelete('cascade');
             $table->timestamps();
             // $table->softDeletes();
+
+            $table->unique([Columns::exercise_id, Columns::focus_area_id]);
         });
     }
 

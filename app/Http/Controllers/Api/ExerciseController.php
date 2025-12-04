@@ -19,10 +19,12 @@ class ExerciseController extends BaseController
      */
     public function index(Request $request)
     {
-        $query = Exercise::query();
+        $query = Exercise::with(['equipments', 'focusAreas'])->latest();
 
-        if ($request->input('page', 0) == 0) {
-            $exercises = $query->latest()->get();
+        // If page=0 → return all records
+        if ((int) $request->input('page', 0) === 0) {
+
+            $exercises = $query->get();
 
             if ($exercises->isEmpty()) {
                 $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
@@ -30,18 +32,19 @@ class ExerciseController extends BaseController
             }
 
             $this->addSuccessResultKeyValue(Keys::DATA, $exercises);
-        } else {
-            $limit = $request->input(Columns::limit, 10);
-            $exercises = $query->latest()->paginate($limit);
-
-            if ($exercises->isEmpty()) {
-                $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
-                return $this->sendFailResult();
-            }
-
-            $this->addPaginationDataInSuccess($exercises);
+            return $this->sendSuccessResult();
         }
 
+        // Paginated results
+        $limit = $request->input(Columns::limit, 10);
+        $exercises = $query->paginate($limit);
+
+        if ($exercises->isEmpty()) {
+            $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
+            return $this->sendFailResult();
+        }
+
+        $this->addPaginationDataInSuccess($exercises);
         return $this->sendSuccessResult();
     }
 
@@ -58,6 +61,13 @@ class ExerciseController extends BaseController
             Columns::preparation_text => 'nullable|string',
             Columns::execution_point => 'required|string',
             Columns::key_tips => 'required|string',
+
+            // NEW VALIDATIONS
+            'focus_area_ids' => 'nullable|array',
+            'focus_area_ids.*' => 'integer|exists:focus_areas,id',
+
+            'equipment_ids' => 'nullable|array',
+            'equipment_ids.*' => 'integer|exists:equipments,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -66,7 +76,7 @@ class ExerciseController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        // 👉 Generate name from display_name (lowercase + underscore)
+        // Generate name
         $generatedName = Str::of($request->input(Columns::display_name))
             ->lower()
             ->replace(' ', '_');
@@ -83,7 +93,7 @@ class ExerciseController extends BaseController
 
         /*
         |--------------------------------------------------------------------------
-        | Upload Male Video
+        | Upload Videos
         |--------------------------------------------------------------------------
         */
         $maleFile = $request->file(Columns::male_video_path);
@@ -91,11 +101,6 @@ class ExerciseController extends BaseController
         $maleFile->move(public_path('exercises/male'), $maleFileName);
         $malePath = 'exercises/male/' . $maleFileName;
 
-        /*
-        |--------------------------------------------------------------------------
-        | Upload Female Video
-        |--------------------------------------------------------------------------
-        */
         $femaleFile = $request->file(Columns::female_video_path);
         $femaleFileName = Str::uuid() . '.' . $femaleFile->getClientOriginalExtension();
         $femaleFile->move(public_path('exercises/female'), $femaleFileName);
@@ -117,18 +122,42 @@ class ExerciseController extends BaseController
             Columns::key_tips => $request->input(Columns::key_tips),
         ]);
 
-        $this->addSuccessResultKeyValue(Keys::DATA, $exercise);
+        /*
+        |--------------------------------------------------------------------------
+        | Insert Pivot: Exercise–FocusAreas
+        |--------------------------------------------------------------------------
+        */
+        if ($request->has('focus_area_ids')) {
+            $exercise->focusAreas()->sync($request->focus_area_ids);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Insert Pivot: Exercise–Equipments
+        |--------------------------------------------------------------------------
+        */
+        if ($request->has('equipment_ids')) {
+            $exercise->equipments()->sync($request->equipment_ids);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
+        $this->addSuccessResultKeyValue(Keys::DATA, $exercise->load(['focusAreas', 'equipments']));
         $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Exercise created successfully.');
 
         return $this->sendSuccessResult();
     }
+
 
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        $exercise = Exercise::find($id);
+        $exercise = Exercise::with(['equipments', 'focusAreas'])->find($id);
 
         if (!$exercise) {
             $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
@@ -159,6 +188,13 @@ class ExerciseController extends BaseController
             Columns::preparation_text => 'nullable|string',
             Columns::execution_point => 'nullable|string',
             Columns::key_tips => 'nullable|string',
+
+            // NEW VALIDATION
+            'focus_area_ids' => 'nullable|array',
+            'focus_area_ids.*' => 'integer|exists:focus_areas,id',
+
+            'equipment_ids' => 'nullable|array',
+            'equipment_ids.*' => 'integer|exists:equipments,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -167,11 +203,7 @@ class ExerciseController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Auto-generate `name` from display_name
-        |--------------------------------------------------------------------------
-        */
+        // Auto-generate name
         $generatedName = Str::of($request->input(Columns::display_name))
             ->lower()
             ->replace(' ', '_');
@@ -181,7 +213,7 @@ class ExerciseController extends BaseController
 
         /*
         |--------------------------------------------------------------------------
-        | Update Image If Uploaded
+        | Update Image
         |--------------------------------------------------------------------------
         */
         if ($request->hasFile(Columns::image_url)) {
@@ -190,16 +222,16 @@ class ExerciseController extends BaseController
                 unlink(public_path($exercise->image_url));
             }
 
-            $image = $request->file(Columns::image_url);
-            $imageFileName = Str::uuid() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('exercises/images'), $imageFileName);
+            $img = $request->file(Columns::image_url);
+            $imgName = Str::uuid() . '.' . $img->getClientOriginalExtension();
+            $img->move(public_path('exercises/images'), $imgName);
 
-            $exercise->image_url = 'exercises/images/' . $imageFileName;
+            $exercise->image_url = 'exercises/images/' . $imgName;
         }
 
         /*
         |--------------------------------------------------------------------------
-        | Update Male Video If Uploaded
+        | Update Male Video
         |--------------------------------------------------------------------------
         */
         if ($request->hasFile(Columns::male_video_path)) {
@@ -209,15 +241,15 @@ class ExerciseController extends BaseController
             }
 
             $male = $request->file(Columns::male_video_path);
-            $maleFileName = Str::uuid() . '.' . $male->getClientOriginalExtension();
-            $male->move(public_path('exercises/male'), $maleFileName);
+            $maleName = Str::uuid() . '.' . $male->getClientOriginalExtension();
+            $male->move(public_path('exercises/male'), $maleName);
 
-            $exercise->male_video_path = 'exercises/male/' . $maleFileName;
+            $exercise->male_video_path = 'exercises/male/' . $maleName;
         }
 
         /*
         |--------------------------------------------------------------------------
-        | Update Female Video If Uploaded
+        | Update Female Video
         |--------------------------------------------------------------------------
         */
         if ($request->hasFile(Columns::female_video_path)) {
@@ -227,10 +259,10 @@ class ExerciseController extends BaseController
             }
 
             $female = $request->file(Columns::female_video_path);
-            $femaleFileName = Str::uuid() . '.' . $female->getClientOriginalExtension();
-            $female->move(public_path('exercises/female'), $femaleFileName);
+            $femaleName = Str::uuid() . '.' . $female->getClientOriginalExtension();
+            $female->move(public_path('exercises/female'), $femaleName);
 
-            $exercise->female_video_path = 'exercises/female/' . $femaleFileName;
+            $exercise->female_video_path = 'exercises/female/' . $femaleName;
         }
 
         /*
@@ -244,13 +276,37 @@ class ExerciseController extends BaseController
 
         /*
         |--------------------------------------------------------------------------
-        | Save Changes
+        | Save Main Exercise
         |--------------------------------------------------------------------------
         */
         $exercise->save();
 
-        $this->addSuccessResultKeyValue(Keys::DATA, $exercise);
+        /*
+        |--------------------------------------------------------------------------
+        | 🔥 Sync Focus Areas (Pivot)
+        |--------------------------------------------------------------------------
+        */
+        if ($request->has('focus_area_ids')) {
+            $exercise->focusAreas()->sync($request->focus_area_ids);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 🔥 Sync Equipments (Pivot)
+        |--------------------------------------------------------------------------
+        */
+        if ($request->has('equipment_ids')) {
+            $exercise->equipments()->sync($request->equipment_ids);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
+        $this->addSuccessResultKeyValue(Keys::DATA, $exercise->load(['focusAreas', 'equipments']));
         $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Exercise updated successfully.');
+
         return $this->sendSuccessResult();
     }
 

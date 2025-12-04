@@ -18,7 +18,7 @@ class WorkoutController extends BaseController
      */
     public function index(Request $request)
     {
-        $query = Workout::query();
+         $query = Workout::with('exercises');
 
         // If page=0, return all records
         if ($request->input('page', 0) == 0) {
@@ -57,6 +57,10 @@ class WorkoutController extends BaseController
             Columns::is_popular => 'nullable|boolean',
             Columns::kcal_burn => 'nullable|string',
             Columns::time_in_min => 'required|integer|min:1',
+
+            // NEW VALIDATION
+            'exercise_ids' => 'required|array',
+            'exercise_ids.*' => 'integer|exists:exercises,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -87,6 +91,13 @@ class WorkoutController extends BaseController
             Columns::time_in_min => $request->input(Columns::time_in_min),
         ]);
 
+        // -------------------------------
+        // ATTACH PIVOT TABLE ENTRIES
+        // -------------------------------
+
+        // 1️⃣ attach exercises to workout (exercise_workout table)
+        $workout->exercises()->sync($request->exercise_ids);
+
         $this->addSuccessResultKeyValue(Keys::DATA, $workout);
         $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Workout created successfully.');
         return $this->sendSuccessResult();
@@ -104,13 +115,19 @@ class WorkoutController extends BaseController
             return $this->sendFailResult();
         }
 
-        // Validation
+        // ------------------------------
+        // VALIDATION (including exercise_ids)
+        // ------------------------------
         $rules = [
             Columns::display_name => 'required|string|max:255',
             Columns::image_url => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             Columns::is_popular => 'nullable|boolean',
             Columns::kcal_burn => 'nullable|string|max:50',
             Columns::time_in_min => 'nullable|integer',
+
+            // NEW
+            'exercise_ids' => 'nullable|array',
+            'exercise_ids.*' => 'integer|exists:exercises,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -124,15 +141,17 @@ class WorkoutController extends BaseController
         $name = preg_replace('/[^a-z0-9\s]/', '', $name);
         $name = preg_replace('/\s+/', '_', trim($name));
 
-        // Handle image update
+        // ------------------------------
+        // IMAGE UPDATE
+        // ------------------------------
         if ($request->hasFile(Columns::image_url)) {
 
-            // Delete old image
+            // delete old image
             if ($workout->image_url && file_exists(public_path($workout->image_url))) {
                 unlink(public_path($workout->image_url));
             }
 
-            // Upload new image
+            // upload new image
             $imageFile = $request->file(Columns::image_url);
             $imageFileName = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
             $imageFile->move(public_path('workouts'), $imageFileName);
@@ -140,7 +159,9 @@ class WorkoutController extends BaseController
             $workout->image_url = 'workouts/' . $imageFileName;
         }
 
-        // Update fields
+        // ------------------------------
+        // UPDATE MAIN FIELDS
+        // ------------------------------
         $workout->name = $name;
         $workout->display_name = $displayName;
 
@@ -158,6 +179,13 @@ class WorkoutController extends BaseController
 
         $workout->save();
 
+        // ------------------------------
+        // UPDATE PIVOT: exercise_workout
+        // ------------------------------
+        if ($request->has('exercise_ids')) {
+            $workout->exercises()->sync($request->exercise_ids);
+        }
+
         $this->addSuccessResultKeyValue(Keys::DATA, $workout);
         $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Workout updated successfully.');
         return $this->sendSuccessResult();
@@ -169,7 +197,7 @@ class WorkoutController extends BaseController
      */
     public function show(string $id)
     {
-        $workout = Workout::find($id);
+        $workout = Workout::with('exercises')->find($id);
 
         if (!$workout) {
             $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
