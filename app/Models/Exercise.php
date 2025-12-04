@@ -18,11 +18,12 @@ class Exercise extends Model
     public function focusAreas()
     {
         return $this->belongsToMany(FocusArea::class, 'exercise_focus_areas', 'exercise_id', 'focus_area_id')
+        ->withPivot('exercise_id', 'focus_area_id', 'id')
             ->withTimestamps();
     }
 
     public function equipments()
     {
-        return $this->belongsToMany(Equipment::class, 'exercise_equipments', 'exercise_id', 'equipment_id');
+        return $this->belongsToMany(Equipment::class, 'exercise_equipments', 'exercise_id', 'equipment_id')->withPivot('exercise_id', 'equipment_id', 'id');
     }
 }

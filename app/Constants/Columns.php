@@ -87,10 +87,15 @@ class Columns
     /**
      * Tables::EXERCISE_EQUIPMENTS Table Columns
      */
+    const execution_point = 'execution_point';
     const execution_id = 'execution_id';
+    const key_tips = 'key_tips';
 
     /**
      * Tables::Workout Table Columns
      */
     const workout_id = 'workout_id';
+    const kcal_burn = 'kcal_burn';
+    const time_in_min = 'time_in_min';
+    const is_popular = "is_popular";
 }

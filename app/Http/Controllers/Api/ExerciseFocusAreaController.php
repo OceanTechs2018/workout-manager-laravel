@@ -90,20 +90,28 @@ class ExerciseFocusAreaController extends BaseController
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    /**
+     * Display all focus areas attached to an exercise.
+     */
+    public function show(string $exerciseId)
     {
-        $data = ExerciseFocusArea::with(['exercise', 'focusArea'])->find($id);
+        // Fetch exercise with its pivot details
+        $data = Exercise::with([
+            'focusAreas' => function ($q) {
+                $q->select('focus_areas.id', 'name')
+                    ->withPivot('id', 'exercise_id', 'focus_area_id', 'created_at', 'updated_at');
+            }
+        ])->find($exerciseId);
 
-        // Check if record exists
         if (!$data) {
             $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
             return $this->sendFailResult();
         }
 
-        // Add success data
         $this->addSuccessResultKeyValue(Keys::DATA, $data);
         return $this->sendSuccessResult();
     }
+
 
     /**
      * Show the form for editing the specified resource.

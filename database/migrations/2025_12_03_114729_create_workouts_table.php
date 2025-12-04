@@ -17,8 +17,10 @@ return new class extends Migration
             $table->id();
             $table->string(Columns::name);
             $table->string(Columns::display_name);
-            $table->integer(Columns::index);
-            $table->boolean(Columns::status)->default(true);
+            $table->string(Columns::image_url);
+            $table->boolean(Columns::is_popular)->default(false);
+            $table->string(Columns::kcal_burn)->nullable();
+            $table->integer(Columns::time_in_min);
             $table->timestamps();
         });
     }
@@ -28,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('workouts');
+        Schema::dropIfExists(Tables::WORKOUTS);
     }
 };

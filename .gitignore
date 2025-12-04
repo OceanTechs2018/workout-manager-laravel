@@ -4,6 +4,9 @@
 /public/female
 /public/male
 /public/focus_areas
+/public/workouts
+/public/exercises
+/public/equipment
 /storage/*.key
 /vendor
 .env

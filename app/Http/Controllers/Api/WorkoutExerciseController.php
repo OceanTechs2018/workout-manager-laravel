@@ -152,19 +152,29 @@ class WorkoutExerciseController extends BaseController
     /**
      * Display a specific execution mapping.
      */
-    public function show(string $id)
+    /**
+     * Display a workout with all its exercises.
+     */
+    public function show(string $workoutId)
     {
-        $data = WorkoutExercise::with([
-            Relationships::EXERCISE,
-            Relationships::WORKOUT
-        ])->find($id);
+        // Fetch workout with exercises + pivot data
+        $workout = Workout::with([
+            'exercises' => function ($q) {
+                $q->select(
+                    'exercises.*',
+                    'workout_exercises.id as pivot_id', // pivot primary key
+                    'workout_exercises.workout_id',
+                    'workout_exercises.exercise_id'
+                );
+            }
+        ])->find($workoutId);
 
-        if (!$data) {
+        if (!$workout) {
             $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
             return $this->sendFailResult();
         }
 
-        $this->addSuccessResultKeyValue(Keys::DATA, $data);
+        $this->addSuccessResultKeyValue(Keys::DATA, $workout);
         return $this->sendSuccessResult();
     }
 

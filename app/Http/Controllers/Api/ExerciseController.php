@@ -51,10 +51,13 @@ class ExerciseController extends BaseController
     public function store(Request $request)
     {
         $rules = [
-            Columns::name => 'required|string|max:255',
+            Columns::display_name => 'required|string|max:255',
+            Columns::image_url => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             Columns::male_video_path => 'required|file|mimes:mp4,mov,avi|max:20480',
             Columns::female_video_path => 'required|file|mimes:mp4,mov,avi|max:20480',
             Columns::preparation_text => 'nullable|string',
+            Columns::execution_point => 'required|string',
+            Columns::key_tips => 'required|string',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -63,28 +66,60 @@ class ExerciseController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        // Upload male video
+        // 👉 Generate name from display_name (lowercase + underscore)
+        $generatedName = Str::of($request->input(Columns::display_name))
+            ->lower()
+            ->replace(' ', '_');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Upload Image
+        |--------------------------------------------------------------------------
+        */
+        $imageFile = $request->file(Columns::image_url);
+        $imageFileName = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
+        $imageFile->move(public_path('exercises/images'), $imageFileName);
+        $imagePath = 'exercises/images/' . $imageFileName;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Upload Male Video
+        |--------------------------------------------------------------------------
+        */
         $maleFile = $request->file(Columns::male_video_path);
         $maleFileName = Str::uuid() . '.' . $maleFile->getClientOriginalExtension();
-        $maleFile->move(public_path('male'), $maleFileName);
-        $malePath = 'male/' . $maleFileName;
+        $maleFile->move(public_path('exercises/male'), $maleFileName);
+        $malePath = 'exercises/male/' . $maleFileName;
 
-        // Upload female video
+        /*
+        |--------------------------------------------------------------------------
+        | Upload Female Video
+        |--------------------------------------------------------------------------
+        */
         $femaleFile = $request->file(Columns::female_video_path);
         $femaleFileName = Str::uuid() . '.' . $femaleFile->getClientOriginalExtension();
-        $femaleFile->move(public_path('female'), $femaleFileName);
-        $femalePath = 'female/' . $femaleFileName;
+        $femaleFile->move(public_path('exercises/female'), $femaleFileName);
+        $femalePath = 'exercises/female/' . $femaleFileName;
 
-        // Save record
+        /*
+        |--------------------------------------------------------------------------
+        | Create Exercise
+        |--------------------------------------------------------------------------
+        */
         $exercise = Exercise::create([
-            Columns::name => $request->input(Columns::name),
+            Columns::name => $generatedName,
+            Columns::display_name => $request->input(Columns::display_name),
+            Columns::image_url => $imagePath,
             Columns::male_video_path => $malePath,
             Columns::female_video_path => $femalePath,
             Columns::preparation_text => $request->input(Columns::preparation_text),
+            Columns::execution_point => $request->input(Columns::execution_point),
+            Columns::key_tips => $request->input(Columns::key_tips),
         ]);
 
         $this->addSuccessResultKeyValue(Keys::DATA, $exercise);
         $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Exercise created successfully.');
+
         return $this->sendSuccessResult();
     }
 
@@ -117,10 +152,13 @@ class ExerciseController extends BaseController
         }
 
         $rules = [
-            Columns::name               => 'required|string|max:255',
-            Columns::male_video_path    => 'nullable|file|mimes:mp4,mov,avi|max:20480',
-            Columns::female_video_path  => 'nullable|file|mimes:mp4,mov,avi|max:20480',
-            Columns::preparation_text   => 'nullable|string',
+            Columns::display_name => 'required|string|max:255',
+            Columns::image_url => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            Columns::male_video_path => 'nullable|file|mimes:mp4,mov,avi|max:20480',
+            Columns::female_video_path => 'nullable|file|mimes:mp4,mov,avi|max:20480',
+            Columns::preparation_text => 'nullable|string',
+            Columns::execution_point => 'nullable|string',
+            Columns::key_tips => 'nullable|string',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -129,34 +167,86 @@ class ExerciseController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        // Update male video if uploaded
+        /*
+        |--------------------------------------------------------------------------
+        | Auto-generate `name` from display_name
+        |--------------------------------------------------------------------------
+        */
+        $generatedName = Str::of($request->input(Columns::display_name))
+            ->lower()
+            ->replace(' ', '_');
+
+        $exercise->display_name = $request->input(Columns::display_name);
+        $exercise->name = $generatedName;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Image If Uploaded
+        |--------------------------------------------------------------------------
+        */
+        if ($request->hasFile(Columns::image_url)) {
+
+            if ($exercise->image_url && file_exists(public_path($exercise->image_url))) {
+                unlink(public_path($exercise->image_url));
+            }
+
+            $image = $request->file(Columns::image_url);
+            $imageFileName = Str::uuid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('exercises/images'), $imageFileName);
+
+            $exercise->image_url = 'exercises/images/' . $imageFileName;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Male Video If Uploaded
+        |--------------------------------------------------------------------------
+        */
         if ($request->hasFile(Columns::male_video_path)) {
+
             if ($exercise->male_video_path && file_exists(public_path($exercise->male_video_path))) {
                 unlink(public_path($exercise->male_video_path));
             }
 
-            $maleFile = $request->file(Columns::male_video_path);
-            $maleFileName = Str::uuid() . '.' . $maleFile->getClientOriginalExtension();
-            $maleFile->move(public_path('male'), $maleFileName);
-            $exercise->male_video_path = 'male/' . $maleFileName;
+            $male = $request->file(Columns::male_video_path);
+            $maleFileName = Str::uuid() . '.' . $male->getClientOriginalExtension();
+            $male->move(public_path('exercises/male'), $maleFileName);
+
+            $exercise->male_video_path = 'exercises/male/' . $maleFileName;
         }
 
-        // Update female video if uploaded
+        /*
+        |--------------------------------------------------------------------------
+        | Update Female Video If Uploaded
+        |--------------------------------------------------------------------------
+        */
         if ($request->hasFile(Columns::female_video_path)) {
+
             if ($exercise->female_video_path && file_exists(public_path($exercise->female_video_path))) {
                 unlink(public_path($exercise->female_video_path));
             }
 
-            $femaleFile = $request->file(Columns::female_video_path);
-            $femaleFileName = Str::uuid() . '.' . $femaleFile->getClientOriginalExtension();
-            $femaleFile->move(public_path('female'), $femaleFileName);
-            $exercise->female_video_path = 'female/' . $femaleFileName;
+            $female = $request->file(Columns::female_video_path);
+            $femaleFileName = Str::uuid() . '.' . $female->getClientOriginalExtension();
+            $female->move(public_path('exercises/female'), $femaleFileName);
+
+            $exercise->female_video_path = 'exercises/female/' . $femaleFileName;
         }
 
-        // Update other fields
-        $exercise->name = $request->input(Columns::name);
+        /*
+        |--------------------------------------------------------------------------
+        | Update Text Fields
+        |--------------------------------------------------------------------------
+        */
         $exercise->preparation_text = $request->input(Columns::preparation_text, $exercise->preparation_text);
+        $exercise->execution_point = $request->input(Columns::execution_point, $exercise->execution_point);
+        $exercise->key_tips = $request->input(Columns::key_tips, $exercise->key_tips);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Save Changes
+        |--------------------------------------------------------------------------
+        */
         $exercise->save();
 
         $this->addSuccessResultKeyValue(Keys::DATA, $exercise);

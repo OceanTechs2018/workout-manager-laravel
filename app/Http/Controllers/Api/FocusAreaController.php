@@ -52,15 +52,20 @@ class FocusAreaController extends BaseController
     public function store(Request $request)
     {
         $rules = [
-            Columns::name => 'required|string|max:255',
             Columns::display_name => 'required|string|max:255',
-            Columns::image_url => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // max 10MB
+            Columns::image_url => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         ];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             return $this->sendValidationError($validator->errors());
         }
+
+        // Generate 'name' from display_name
+        $displayName = $request->input(Columns::display_name);
+
+        // Convert to lowercase and replace spaces with underscores
+        $generatedName = Str::slug($displayName, '_'); // perfect for this use case
 
         // Handle image upload
         $imageFile = $request->file(Columns::image_url);
@@ -69,8 +74,8 @@ class FocusAreaController extends BaseController
         $imagePath = 'focus_areas/' . $imageFileName;
 
         $focusArea = FocusArea::create([
-            Columns::name => $request->input(Columns::name),
-            Columns::display_name => $request->input(Columns::display_name),
+            Columns::name => $generatedName,
+            Columns::display_name => $displayName,
             Columns::image_url => $imagePath,
         ]);
 
@@ -109,7 +114,6 @@ class FocusAreaController extends BaseController
 
         // Validation rules
         $rules = [
-            Columns::name => 'required|string|max:255',
             Columns::display_name => 'required|string|max:255',
             Columns::image_url => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         ];
@@ -119,17 +123,14 @@ class FocusAreaController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        // Update name only if provided
-        if ($request->filled(Columns::name)) {
-            $focusArea->name = $request->input(Columns::name);
-        }
+        // Update display_name
+        $displayName = $request->input(Columns::display_name);
+        $focusArea->display_name = $displayName;
 
-        // Update display_name only if provided
-        if ($request->filled(Columns::display_name)) {
-            $focusArea->display_name = $request->input(Columns::display_name);
-        }
+        // Auto-generate name from display_name
+        $focusArea->name = Str::slug($displayName, '_');
 
-        // If image is uploaded
+        // If new image uploaded
         if ($request->hasFile(Columns::image_url)) {
 
             // Delete old image
@@ -145,7 +146,7 @@ class FocusAreaController extends BaseController
             $focusArea->image_url = 'focus_areas/' . $imageFileName;
         }
 
-        // Save changes
+        // Save updated record
         $focusArea->save();
 
         $this->addSuccessResultKeyValue(Keys::DATA, $focusArea);

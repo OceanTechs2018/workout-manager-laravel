@@ -15,7 +15,9 @@ return new class extends Migration
     {
         Schema::create(Tables::EQUIPMENTS, function (Blueprint $table) {
             $table->id();
+            $table->string(Columns::name);
             $table->string(Columns::display_name);
+            $table->string(Columns::image_url);
             $table->timestamps();
             // $table->softDeletes();
         });

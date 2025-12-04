@@ -6,43 +6,43 @@ use App\Constants\Columns;
 use App\Constants\Keys;
 use App\Constants\Messages;
 use App\Http\Controllers\BaseController;
+use App\Models\Category;
 use App\Models\Equipment;
-use App\Models\FocusArea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Str;
 
 
-class EquipmentController extends BaseController
+class CategoryController extends BaseController
 {
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $query = Equipment::query();
+        $query = Category::query();
 
         // If page=0, return all records
         if ($request->input('page', 0) == 0) {
-            $equipment = $query->latest()->get();
+            $category = $query->latest()->get();
 
-            if ($equipment->isEmpty()) {
+            if ($category->isEmpty()) {
                 $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
                 return $this->sendFailResult();
             }
 
-            $this->addSuccessResultKeyValue(Keys::DATA, $equipment);
+            $this->addSuccessResultKeyValue(Keys::DATA, $category);
         } else {
             // Paginate with optional limit (default 10)
             $limit = $request->input(Columns::limit, 10);
-            $equipment = $query->latest()->paginate($limit);
+            $category = $query->latest()->paginate($limit);
 
-            if ($equipment->isEmpty()) {
+            if ($category->isEmpty()) {
                 $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
                 return $this->sendFailResult();
             }
 
-            $this->addPaginationDataInSuccess($equipment);
+            $this->addPaginationDataInSuccess($category);
         }
 
         return $this->sendSuccessResult();
@@ -58,7 +58,6 @@ class EquipmentController extends BaseController
     {
         $rules = [
             Columns::display_name => 'required|string|max:255',
-            Columns::image_url => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // max 10MB
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -72,21 +71,14 @@ class EquipmentController extends BaseController
             ->lower()
             ->replace(' ', '_');
 
-        // Upload image
-        $imageFile = $request->file(Columns::image_url);
-        $imageFileName = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
-        $imageFile->move(public_path('equipment'), $imageFileName);
-        $imagePath = 'equipment/' . $imageFileName;
-
         // Create record
-        $equipment = Equipment::create([
+        $category = Category::create([
             Columns::name => $generatedName,
             Columns::display_name => $request->input(Columns::display_name),
-            Columns::image_url => $imagePath,
         ]);
 
-        $this->addSuccessResultKeyValue(Keys::DATA, $equipment);
-        $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Equipment created successfully.');
+        $this->addSuccessResultKeyValue(Keys::DATA, $category);
+        $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Category created successfully.');
         return $this->sendSuccessResult();
     }
 
@@ -95,14 +87,14 @@ class EquipmentController extends BaseController
      */
     public function show(string $id)
     {
-        $equipment = Equipment::find($id);
+        $category = Category::find($id);
 
-        if (!$equipment) {
+        if (!$category) {
             $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
             return $this->sendFailResult();
         }
 
-        $this->addSuccessResultKeyValue(Keys::DATA, $equipment);
+        $this->addSuccessResultKeyValue(Keys::DATA, $category);
         return $this->sendSuccessResult();
     }
 
@@ -111,16 +103,15 @@ class EquipmentController extends BaseController
      */
     public function update(Request $request, string $id)
     {
-        $equipment = Equipment::find($id);
+        $category = Category::find($id);
 
-        if (!$equipment) {
+        if (!$category) {
             $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
             return $this->sendFailResult();
         }
 
         $rules = [
             Columns::display_name => 'required|string|max:255',
-            Columns::image_url => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -134,31 +125,14 @@ class EquipmentController extends BaseController
             ->lower()
             ->replace(' ', '_');
 
-        // If new image uploaded, delete old and upload new
-        if ($request->hasFile(Columns::image_url)) {
-
-            // delete old image
-            if ($equipment->image_url && file_exists(public_path($equipment->image_url))) {
-                unlink(public_path($equipment->image_url));
-            }
-
-            // upload new image
-            $imageFile = $request->file(Columns::image_url);
-            $imageFileName = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
-            $imageFile->move(public_path('equipment'), $imageFileName);
-            $imagePath = 'equipment/' . $imageFileName;
-
-            $equipment->image_url = $imagePath;
-        }
-
         // Update fields
-        $equipment->name = $generatedName;
-        $equipment->display_name = $request->input(Columns::display_name);
+        $category->name = $generatedName;
+        $category->display_name = $request->input(Columns::display_name);
 
-        $equipment->save();
+        $category->save();
 
-        $this->addSuccessResultKeyValue(Keys::DATA, $equipment);
-        $this->addSuccessResultKeyValue(Keys::MESSAGE, "Equipment updated successfully.");
+        $this->addSuccessResultKeyValue(Keys::DATA, $category);
+        $this->addSuccessResultKeyValue(Keys::MESSAGE, "category updated successfully.");
         return $this->sendSuccessResult();
     }
 
@@ -167,17 +141,17 @@ class EquipmentController extends BaseController
      */
     public function destroy(string $id)
     {
-        $equipment = Equipment::find($id);
+        $category = Category::find($id);
 
-        if (!$equipment) {
+        if (!$category) {
             $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
             return $this->sendFailResult();
         }
 
         // Soft delete the record
-        $equipment->delete();
+        $category->delete();
 
-        $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Equipment deleted successfully.');
+        $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Category deleted successfully.');
         return $this->sendSuccessResult();
     }
 }

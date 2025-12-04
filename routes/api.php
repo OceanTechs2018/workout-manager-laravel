@@ -3,6 +3,8 @@
 use App\Constants\ControllerMethods;
 use App\Constants\ControllerPaths;
 use App\Constants\EndPoints;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CategoryWorkoutController;
 use App\Http\Controllers\Api\ConfigController;
 use App\Http\Controllers\Api\EquipmentController;
 use App\Http\Controllers\Api\ExecutionPointController;
@@ -85,7 +87,7 @@ Route::post(EndPoints::password_update, ControllerPaths::UserController . Contro
 Route::get(EndPoints::list_equipment, [EquipmentController::class, 'index']);
 Route::get(EndPoints::show_equipment, [EquipmentController::class, 'show']);
 Route::post(EndPoints::add_equipment, [EquipmentController::class, 'store']);
-Route::patch(EndPoints::update_equipment, [EquipmentController::class, 'update']);
+Route::post(EndPoints::update_equipment, [EquipmentController::class, 'update']);
 Route::delete(EndPoints::delete_equipment, [EquipmentController::class, 'destroy']);
 
 
@@ -111,29 +113,51 @@ Route::post(EndPoints::add_exercise, [ExerciseController::class, 'store']);
 Route::post(EndPoints::update_exercise, [ExerciseController::class, 'update']);
 Route::delete(EndPoints::delete_exercise, [ExerciseController::class, 'destroy']);
 
+/**
+ * ========================================================================
+ * category Services
+ * ========================================================================
+ */
+Route::get(EndPoints::list_category, [CategoryController::class, 'index']);
+Route::get(EndPoints::show_category, [CategoryController::class, 'show']);
+Route::post(EndPoints::add_category, [CategoryController::class, 'store']);
+Route::post(EndPoints::update_category, [CategoryController::class, 'update']);
+Route::delete(EndPoints::delete_category, [CategoryController::class, 'destroy']);
 
 /**
  * ========================================================================
- *  Execution Point Services
+ * category - workout Services
  * ========================================================================
  */
-Route::get(EndPoints::list_execution_point, [ExecutionPointController::class, 'index']);
-Route::get(EndPoints::show_execution_point, [ExecutionPointController::class, 'show']);
-Route::post(EndPoints::add_execution_point, [ExecutionPointController::class, 'store']);
-Route::post(EndPoints::update_execution_point, [ExecutionPointController::class, 'update']);
-Route::delete(EndPoints::delete_execution_point, [ExecutionPointController::class, 'destroy']);
+Route::get(EndPoints::list_category_workout, [CategoryWorkoutController::class, 'index']);
+Route::get(EndPoints::show_category_workout, [CategoryWorkoutController::class, 'show']);
+Route::post(EndPoints::add_category_workout, [CategoryWorkoutController::class, 'store']);
+Route::post(EndPoints::update_category_workout, [CategoryWorkoutController::class, 'update']);
+Route::delete(EndPoints::delete_category_workout, [CategoryWorkoutController::class, 'destroy']);
 
 
-/**
- * ========================================================================
- * Exercise Execution Point Services
- * ========================================================================
- */
-Route::get(EndPoints::list_exercise_execution_point, [ExerciseExecutionPointController::class, 'index']);
-Route::get(EndPoints::show_exercise_execution_point, [ExerciseExecutionPointController::class, 'show']);
-Route::post(EndPoints::add_exercise_execution_point, [ExerciseExecutionPointController::class, 'store']);
-Route::post(EndPoints::update_exercise_execution_point, [ExerciseExecutionPointController::class, 'update']);
-Route::delete(EndPoints::delete_exercise_execution_point, [ExerciseExecutionPointController::class, 'destroy']);
+// /**
+//  * ========================================================================
+//  *  Execution Point Services
+//  * ========================================================================
+//  */
+// Route::get(EndPoints::list_execution_point, [ExecutionPointController::class, 'index']);
+// Route::get(EndPoints::show_execution_point, [ExecutionPointController::class, 'show']);
+// Route::post(EndPoints::add_execution_point, [ExecutionPointController::class, 'store']);
+// Route::post(EndPoints::update_execution_point, [ExecutionPointController::class, 'update']);
+// Route::delete(EndPoints::delete_execution_point, [ExecutionPointController::class, 'destroy']);
+
+
+// /**
+//  * ========================================================================
+//  * Exercise Execution Point Services
+//  * ========================================================================
+//  */
+// Route::get(EndPoints::list_exercise_execution_point, [ExerciseExecutionPointController::class, 'index']);
+// Route::get(EndPoints::show_exercise_execution_point, [ExerciseExecutionPointController::class, 'show']);
+// Route::post(EndPoints::add_exercise_execution_point, [ExerciseExecutionPointController::class, 'store']);
+// Route::post(EndPoints::update_exercise_execution_point, [ExerciseExecutionPointController::class, 'update']);
+// Route::delete(EndPoints::delete_exercise_execution_point, [ExerciseExecutionPointController::class, 'destroy']);
 
 /**
  * ========================================================================
@@ -146,16 +170,16 @@ Route::post(EndPoints::add_exercise_focus_area, [ExerciseFocusAreaController::cl
 Route::post(EndPoints::update_exercise_focus_area, [ExerciseFocusAreaController::class, 'update']);
 Route::delete(EndPoints::delete_exercise_focus_area, [ExerciseFocusAreaController::class, 'destroy']);
 
-/**
- * ========================================================================
- * Exercise Key Tips Services
- * ========================================================================
- */
-Route::get(EndPoints::list_exercise_key_tips, [ExerciseKeyTipController::class, 'index']);
-Route::get(EndPoints::show_exercise_key_tips, [ExerciseKeyTipController::class, 'show']);
-Route::post(EndPoints::add_exercise_key_tips, [ExerciseKeyTipController::class, 'store']);
-Route::post(EndPoints::update_exercise_key_tips, [ExerciseKeyTipController::class, 'update']);
-Route::delete(EndPoints::delete_exercise_key_tips, [ExerciseKeyTipController::class, 'destroy']);
+// /**
+//  * ========================================================================
+//  * Exercise Key Tips Services
+//  * ========================================================================
+//  */
+// Route::get(EndPoints::list_exercise_key_tips, [ExerciseKeyTipController::class, 'index']);
+// Route::get(EndPoints::show_exercise_key_tips, [ExerciseKeyTipController::class, 'show']);
+// Route::post(EndPoints::add_exercise_key_tips, [ExerciseKeyTipController::class, 'store']);
+// Route::post(EndPoints::update_exercise_key_tips, [ExerciseKeyTipController::class, 'update']);
+// Route::delete(EndPoints::delete_exercise_key_tips, [ExerciseKeyTipController::class, 'destroy']);
 
 /**
  * ========================================================================
@@ -181,7 +205,7 @@ Route::delete(EndPoints::delete_workout, [WorkoutController::class, 'destroy']);
 
 /**
  * ========================================================================
- * Workout Services
+ * Workout - exercise Services
  * ========================================================================
  */
 Route::get(EndPoints::list_workout_exercise, [WorkoutExerciseController::class, 'index']);

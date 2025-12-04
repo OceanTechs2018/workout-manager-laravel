@@ -72,6 +72,28 @@ class EndPoints
     const update_exercise = '/exercise/{id}';
     const delete_exercise = '/exercise/{id}';
 
+     /**
+     * ========================================================================
+     * category Route
+     * ========================================================================
+     */
+    const list_category = '/category';
+    const show_category = '/category/{id}';
+    const add_category = '/category';
+    const update_category = '/category/{id}';
+    const delete_category = '/category/{id}';
+
+    /**
+     * ========================================================================
+     * category - workout Route
+     * ========================================================================
+     */
+    const list_category_workout = '/category_workout';
+    const show_category_workout = '/category_workout/{id}';
+    const add_category_workout = '/category_workout';
+    const update_category_workout = '/category_workout/{id}';
+    const delete_category_workout = '/category_workout/{id}';
+
     /**
      * ========================================================================
      * Exercise Execution Point Route

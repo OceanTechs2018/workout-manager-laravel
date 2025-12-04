@@ -13,12 +13,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create(Tables::EXECUTION_POINTS, function (Blueprint $table) {
+        Schema::create(Tables::CATEGORIES, function (Blueprint $table) {
             $table->id();
-            $table->text(Columns::text);
-            $table->integer(Columns::index)->nullable();
+            $table->string(Columns::name);
+            $table->string(Columns::display_name);
             $table->timestamps();
-            // $table->softDeletes();
         });
     }
 
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists(Tables::EXERCISE_EXECUTION_POINTS);
+        Schema::dropIfExists(Tables::CATEGORIES);
     }
 };

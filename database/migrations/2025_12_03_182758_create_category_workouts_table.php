@@ -13,10 +13,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create(Tables::EXERCISE_EXECUTION_POINTS, function (Blueprint $table) {
+        Schema::create(Tables::CATEGORY_WORKOUTS, function (Blueprint $table) {
             $table->id();
-            $table->foreignId(Columns::exercise_id)->constrained(Tables::EXERCISES)->onDelete('cascade');
-            $table->foreignId(Columns::execution_id)->constrained(Tables::EXECUTION_POINTS)->onDelete('cascade');
+            $table->foreignId(Columns::workout_id)->constrained(Tables::WORKOUTS)->onDelete('cascade');
+            $table->foreignId(Columns::category_id)->constrained(Tables::CATEGORIES)->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('exercise_execution_point');
+        Schema::dropIfExists(Tables::CATEGORY_WORKOUTS);
     }
 };

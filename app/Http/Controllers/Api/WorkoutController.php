@@ -8,6 +8,7 @@ use App\Constants\Messages;
 use App\Http\Controllers\BaseController;
 use App\Models\Workout;
 use Illuminate\Http\Request;
+use Str;
 use Validator;
 
 class WorkoutController extends BaseController
@@ -52,7 +53,10 @@ class WorkoutController extends BaseController
     {
         $rules = [
             Columns::display_name => 'required|string|max:255',
-            Columns::index => 'nullable|integer',
+            Columns::image_url => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            Columns::is_popular => 'nullable|boolean',
+            Columns::kcal_burn => 'nullable|string',
+            Columns::time_in_min => 'required|integer|min:1',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -61,19 +65,26 @@ class WorkoutController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        // Get display_name
+        // Generate name from display_name
         $displayName = $request->input(Columns::display_name);
-        $index = $request->input(Columns::index);
-
-        // Convert to slug-like string for "name"
-        $name = strtolower($displayName);          // lowercase
-        $name = preg_replace('/[^a-z0-9\s]/', '', $name); // remove special chars
+        $name = strtolower($displayName);
+        $name = preg_replace('/[^a-z0-9\s]/', '', $name); // remove special characters
         $name = preg_replace('/\s+/', '_', trim($name));  // replace spaces with underscore
 
+        // Upload Image
+        $imageFile = $request->file(Columns::image_url);
+        $imageFileName = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
+        $imageFile->move(public_path('workouts'), $imageFileName);
+        $imagePath = 'workouts/' . $imageFileName;
+
+        // Create Workout
         $workout = Workout::create([
             Columns::name => $name,
             Columns::display_name => $displayName,
-            Columns::index => $index,
+            Columns::image_url => $imagePath,
+            Columns::is_popular => $request->input(Columns::is_popular, false),
+            Columns::kcal_burn => $request->input(Columns::kcal_burn),
+            Columns::time_in_min => $request->input(Columns::time_in_min),
         ]);
 
         $this->addSuccessResultKeyValue(Keys::DATA, $workout);
@@ -93,40 +104,65 @@ class WorkoutController extends BaseController
             return $this->sendFailResult();
         }
 
+        // Validation
         $rules = [
             Columns::display_name => 'required|string|max:255',
-            Columns::index => 'nullable|integer',
-            Columns::status => 'nullable|boolean'
+            Columns::image_url => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            Columns::is_popular => 'nullable|boolean',
+            Columns::kcal_burn => 'nullable|string|max:50',
+            Columns::time_in_min => 'nullable|integer',
         ];
 
         $validator = Validator::make($request->all(), $rules);
-
         if ($validator->fails()) {
             return $this->sendValidationError($validator->errors());
         }
 
-        // Get updated values
+        // Convert display_name → slug name
         $displayName = $request->input(Columns::display_name);
-        $index = $request->input(Columns::index);
-        $status = $request->input(Columns::status);
-
-        // Convert to slug-like string for "name"
         $name = strtolower($displayName);
-        $name = preg_replace('/[^a-z0-9\s]/', '', $name); // remove special characters
-        $name = preg_replace('/\s+/', '_', trim($name));  // spaces -> underscore
+        $name = preg_replace('/[^a-z0-9\s]/', '', $name);
+        $name = preg_replace('/\s+/', '_', trim($name));
 
-        // Update workout
-        $workout->update([
-            Columns::name => $name,
-            Columns::display_name => $displayName,
-            Columns::index => $index,
-            Columns::status => $status
-        ]);
+        // Handle image update
+        if ($request->hasFile(Columns::image_url)) {
+
+            // Delete old image
+            if ($workout->image_url && file_exists(public_path($workout->image_url))) {
+                unlink(public_path($workout->image_url));
+            }
+
+            // Upload new image
+            $imageFile = $request->file(Columns::image_url);
+            $imageFileName = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
+            $imageFile->move(public_path('workouts'), $imageFileName);
+
+            $workout->image_url = 'workouts/' . $imageFileName;
+        }
+
+        // Update fields
+        $workout->name = $name;
+        $workout->display_name = $displayName;
+
+        if ($request->filled(Columns::kcal_burn)) {
+            $workout->kcal_burn = $request->input(Columns::kcal_burn);
+        }
+
+        if ($request->filled(Columns::time_in_min)) {
+            $workout->time_in_min = $request->input(Columns::time_in_min);
+        }
+
+        if (!is_null($request->input(Columns::is_popular))) {
+            $workout->is_popular = $request->boolean(Columns::is_popular);
+        }
+
+        $workout->save();
 
         $this->addSuccessResultKeyValue(Keys::DATA, $workout);
         $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Workout updated successfully.');
         return $this->sendSuccessResult();
     }
+
 
     /**
      * Display the specified resource.
@@ -144,7 +180,7 @@ class WorkoutController extends BaseController
         return $this->sendSuccessResult();
     }
 
-     /**
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
