@@ -128,4 +128,40 @@ class UserController extends BaseController
         $this->addSuccessResultKeyValue(Keys::MESSAGE, Messages::LOGOUT_SUCCESSFULLY);
         return $this->sendSuccessResult();
     }
+
+    /**
+     * Display a listing of the users.
+     */
+    public function index(Request $request)
+    {
+        $query = User::query()->latest(); // DESC order
+
+        // If page = 0 → return all records
+        if ($request->input('page', 0) == 0) {
+
+            $users = $query->get();
+
+            if ($users->isEmpty()) {
+                $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
+                return $this->sendFailResult();
+            }
+
+            $this->addSuccessResultKeyValue(Keys::DATA, $users);
+        } else {
+
+            // Paginate with optional limit (default = 10)
+            $limit = $request->input(Columns::limit, 10);
+
+            $users = $query->paginate($limit);
+
+            if ($users->isEmpty()) {
+                $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
+                return $this->sendFailResult();
+            }
+
+            $this->addPaginationDataInSuccess($users);
+        }
+
+        return $this->sendSuccessResult();
+    }
 }

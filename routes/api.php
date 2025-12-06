@@ -228,5 +228,6 @@ Route::get(EndPoints::manager_dashboard, [ManagerDashboardController::class, 'in
 Route::post(EndPoints::user_register, [UserController::class, 'register']);
 Route::post(EndPoints::user_login, [UserController::class, 'login']);
 Route::post(EndPoints::user_logout, [UserController::class, 'logout']);
+Route::get(EndPoints::user_list, [UserController::class, 'index']);
 
 Route::post('config-command', [ConfigController::class, 'runCommand']);
