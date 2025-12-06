@@ -177,4 +177,5 @@ class EndPoints
      * ========================================================================
      */
     const get_user_home = '/user-home';
+    const manager_dashboard = '/manager-dashboard';
 }
