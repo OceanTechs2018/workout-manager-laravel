@@ -11,6 +11,7 @@ class Messages
     const ERROR_INVALID_USER_ID_PASSWORD = 'Invalid UserId Password';
     const NO_DATA_FOUND = 'No data found';
     const USER_NOT_FOUND = 'User not found';
+    const UNAUTHORIZED_USER = 'Unautorized User';
 
 
     const RECORD_FETCHED_SUCCESSFULLY = 'Record Fetched successfully.';

@@ -191,4 +191,12 @@ class EndPoints
     const delete_master_goal = 'master-goal/delete/{id}';
     const show_master_goal = 'master-goal/show/{id}';
 
+    /**
+     * ========================================================================
+     * User Detail Route
+     * ========================================================================
+     */
+
+    const add_user_detail = 'user-detail/add';
+    const update_user_detail = 'user-detail/update';
 }

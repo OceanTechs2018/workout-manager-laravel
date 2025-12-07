@@ -20,6 +20,13 @@ class MasterGoalController extends BaseController
     {
         $query = MasterGoal::query();
 
+        // ============================
+        // STATUS FILTER
+        // ============================
+        if ($request->has('status') && $request->status !== null) {
+            $query->where('status', $request->status);
+        }
+
         // If page=0, return all records
         if ($request->input('page', 0) == 0) {
             $goals = $query->latest()->get();
@@ -30,8 +37,7 @@ class MasterGoalController extends BaseController
             }
 
             $this->addSuccessResultKeyValue(Keys::DATA, $goals);
-        } 
-        else {
+        } else {
             $limit = $request->input(Columns::limit, 10);
             $goals = $query->latest()->paginate($limit);
 
@@ -69,9 +75,9 @@ class MasterGoalController extends BaseController
             ->replaceMatches('/[^a-z0-9_]/', '');
 
         $goal = MasterGoal::create([
-            Columns::name        => $generatedName,
+            Columns::name => $generatedName,
             Columns::display_name => $request->input(Columns::display_name),
-            Columns::status      => $request->boolean(Columns::status, true),
+            Columns::status => $request->boolean(Columns::status, true),
         ]);
 
         $this->addSuccessResultKeyValue(Keys::DATA, $goal);
@@ -125,9 +131,9 @@ class MasterGoalController extends BaseController
             ->replaceMatches('/[^a-z0-9_]/', '');
 
         $goal->update([
-            Columns::name         => $generatedName,
+            Columns::name => $generatedName,
             Columns::display_name => $request->input(Columns::display_name),
-            Columns::status       => $request->boolean(Columns::status, $goal->status),
+            Columns::status => $request->boolean(Columns::status, $goal->status),
         ]);
 
         $this->addSuccessResultKeyValue(Keys::DATA, $goal);

@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\ManagerDashboardController;
 use App\Http\Controllers\Api\MasterGoalController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserDashboardController;
+use App\Http\Controllers\Api\UserDetailController;
 use App\Http\Controllers\Api\WorkoutController;
 use App\Http\Controllers\Api\WorkoutExerciseController;
 use Illuminate\Http\Request;
@@ -39,14 +40,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 
-/**
- *
- *  unauthorised:api = Here "auth" is middleware define
- *                     in 'Kernel.php' with Class 'Authenticate.php'
- */
-Route::group(["middleware" => "auth:api"], function () {
-
-});
 
 /**
  * Called When Unauthorised user Access services. Called From Middleware UnauthorisedUser.php -> redirectTo()
@@ -239,3 +232,16 @@ Route::delete(EndPoints::delete_master_goal, [MasterGoalController::class, 'dest
 Route::get(EndPoints::show_master_goal, [MasterGoalController::class, 'show']);
 Route::post(EndPoints::update_master_goal, [MasterGoalController::class, 'update']);
 
+/**
+ *
+ *  unauthorised:api = Here "auth" is middleware define
+ *                     in 'Kernel.php' with Class 'Authenticate.php'
+ */
+Route::group(["middleware" => "auth:api"], function () {
+
+
+    Route::post(EndPoints::add_user_detail, [UserDetailController::class, 'store']);
+    Route::post(EndPoints::update_user_detail, [UserDetailController::class, 'update']);
+    Route::get(EndPoints::user_detail, [UserDetailController::class, 'showProfile']);
+
+});
