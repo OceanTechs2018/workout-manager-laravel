@@ -163,7 +163,75 @@ class UserController extends BaseController
     {
         $query = User::query()->latest(); // DESC order
 
-        // If page = 0 → return all records
+        // =========================================
+        // 🔍 SEARCH FILTER (name, email, phone)
+        // =========================================
+        if ($request->filled('keyword')) {
+            $keyword = $request->keyword;
+
+            $query->where(function ($q) use ($keyword) {
+                $q->where(Columns::name, 'LIKE', "%$keyword%")
+                    ->orWhere(Columns::email, 'LIKE', "%$keyword%")
+                    ->orWhere(Columns::phone, 'LIKE', "%$keyword%");
+            });
+        }
+
+        // // =========================================
+        // // 🔒 STATUS FILTER
+        // // =========================================
+        // if ($request->filled('status')) {
+        //     $query->where(Columns::status, $request->status);
+        // }
+
+        // =========================================
+        // 📅 DATE FILTERS (start_date, end_date)
+        // =========================================
+        if ($request->filled('start_date')) {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+
+        // =========================================
+        // ⏳ DURATION FILTER (today, week, month, year)
+        // =========================================
+        if ($request->filled('duration')) {
+            switch ($request->duration) {
+
+                case 'today':
+                    $query->whereDate('created_at', now()->toDateString());
+                    break;
+
+                case 'week':
+                    $query->whereBetween('created_at', [
+                        now()->startOfWeek(),
+                        now()->endOfWeek()
+                    ]);
+                    break;
+
+                case 'month':
+                    $query->whereBetween('created_at', [
+                        now()->startOfMonth(),
+                        now()->endOfMonth()
+                    ]);
+                    break;
+
+                case 'year':
+                    $query->whereYear('created_at', now()->year);
+                    break;
+
+                default:
+                    // Ignore if unknown value
+                    break;
+            }
+        }
+
+        // =========================================
+        // 📄 PAGINATION HANDLING
+        // page = 0 → return ALL records
+        // =========================================
         if ($request->input('page', 0) == 0) {
 
             $users = $query->get();
@@ -174,20 +242,20 @@ class UserController extends BaseController
             }
 
             $this->addSuccessResultKeyValue(Keys::DATA, $users);
-        } else {
-
-            // Paginate with optional limit (default = 10)
-            $limit = $request->input(Columns::limit, 10);
-
-            $users = $query->paginate($limit);
-
-            if ($users->isEmpty()) {
-                $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
-                return $this->sendFailResult();
-            }
-
-            $this->addPaginationDataInSuccess($users);
+            return $this->sendSuccessResult();
         }
+
+        // Paginated response
+        $limit = $request->input(Columns::limit, 10);
+
+        $users = $query->paginate($limit);
+
+        if ($users->isEmpty()) {
+            $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
+            return $this->sendFailResult();
+        }
+
+        $this->addPaginationDataInSuccess($users);
 
         return $this->sendSuccessResult();
     }
