@@ -221,7 +221,6 @@ Route::get(EndPoints::manager_dashboard, [ManagerDashboardController::class, 'in
 
 Route::post(EndPoints::user_register, [UserController::class, 'register']);
 Route::post(EndPoints::user_login, [UserController::class, 'login']);
-Route::post(EndPoints::user_logout, [UserController::class, 'logout']);
 Route::get(EndPoints::user_list, [UserController::class, 'index']);
 
 Route::post('config-command', [ConfigController::class, 'runCommand']);
@@ -239,6 +238,7 @@ Route::post(EndPoints::update_master_goal, [MasterGoalController::class, 'update
  */
 Route::group(["middleware" => "auth:api"], function () {
 
+    Route::post(EndPoints::user_logout, [UserController::class, 'logout']);
 
     Route::post(EndPoints::add_user_detail, [UserDetailController::class, 'store']);
     Route::post(EndPoints::update_user_detail, [UserDetailController::class, 'update']);

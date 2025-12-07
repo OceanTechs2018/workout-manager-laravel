@@ -150,7 +150,7 @@ class UserController extends BaseController
 
     function logout(Request $request)
     {
-        //        Auth::logout();
+        // Auth::logout();
         $request->user()->token()->revoke();
         $this->addSuccessResultKeyValue(Keys::MESSAGE, Messages::LOGOUT_SUCCESSFULLY);
         return $this->sendSuccessResult();

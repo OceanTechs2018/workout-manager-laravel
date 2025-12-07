@@ -148,6 +148,13 @@ class UserDetailController extends BaseController
         // VALIDATION RULES
         // ============================
         $rules = [
+                // User Table Fields
+            Columns::name => 'sometimes|string|max:255',
+            Columns::email => 'sometimes|email|unique:users,email,' . $authUser->id,
+            Columns::phone => 'sometimes|string|max:20|unique:users,phone,' . $authUser->id,
+            Columns::image_url => 'sometimes|file|mimes:jpg,jpeg,png,webp|max:5000',
+
+                // User Detail Fields
             Columns::gender => 'required|in:' . Enums::MALE . ',' . Enums::FEMALE,
             Columns::user_name => 'required|string|max:255',
             Columns::age => 'required|integer|min:0',
@@ -174,7 +181,33 @@ class UserDetailController extends BaseController
         }
 
         // ============================
-        // UPDATE USER DETAIL
+        // UPDATE USER TABLE
+        // ============================
+        $updateUser = [];
+
+        if ($request->filled(Columns::name))
+            $updateUser[Columns::name] = $request->name;
+        if ($request->filled(Columns::email))
+            $updateUser[Columns::email] = $request->email;
+        if ($request->filled(Columns::phone))
+            $updateUser[Columns::phone] = $request->phone;
+
+        // ---------- IMAGE UPLOAD ----------
+        if ($request->hasFile(Columns::image_url)) {
+            $file = $request->file(Columns::image_url);
+            $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+            $file->move(public_path('users'), $fileName);
+
+            $updateUser[Columns::image_url] = 'users/' . $fileName;
+        }
+
+        if (!empty($updateUser)) {
+            $authUser->update($updateUser);
+        }
+
+        // ============================
+        // UPDATE USER DETAILS
         // ============================
         $detail->update([
             Columns::gender => $request->gender,
@@ -194,9 +227,7 @@ class UserDetailController extends BaseController
         $newGoals = $request->goal_ids ?? [];
         $existingGoals = UserGoal::where(Columns::user_id, $authUser->id)->pluck(Columns::goal_id)->toArray();
 
-        // Goals to remove
         $toRemove = array_diff($existingGoals, $newGoals);
-        // Goals to add
         $toAdd = array_diff($newGoals, $existingGoals);
 
         if (!empty($toRemove)) {
@@ -218,9 +249,7 @@ class UserDetailController extends BaseController
         $newFocus = $request->focus_area_ids ?? [];
         $existingFocus = UserFocusArea::where(Columns::user_id, $authUser->id)->pluck(Columns::focus_area_id)->toArray();
 
-        // Focus areas to remove
         $focusToRemove = array_diff($existingFocus, $newFocus);
-        // Focus areas to add
         $focusToAdd = array_diff($newFocus, $existingFocus);
 
         if (!empty($focusToRemove)) {
@@ -237,7 +266,7 @@ class UserDetailController extends BaseController
         }
 
         // ============================
-        // UPDATE NOTIFICATION ENABLE FLAG
+        // NOTIFICATION FLAG
         // ============================
         $authUser->is_notification_enable = $request->is_notification_enable;
         $authUser->save();
