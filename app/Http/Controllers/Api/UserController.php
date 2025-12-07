@@ -48,34 +48,61 @@ class UserController extends BaseController
 
     public function register(Request $request)
     {
-        $input = $request->all();
         $rules = User::$rules;
 
-        $validator = Validator::make($input, $rules);
+        $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             return $this->sendValidationError($validator->errors());
         }
 
         try {
 
-            // Encrypt password
-            $input[Columns::password] = Hash::make($input[Columns::password]);
+            // Create clean input array
+            $input = [
+                Columns::name => $request->name,
+                Columns::email => $request->email,
+                Columns::phone => $request->phone,
+            ];
 
-            // Remove confirm password (not needed in DB)
+            // Hash password
+            $input[Columns::password] = Hash::make($request->password);
+
+            // Remove confirm password
             unset($input[Columns::confirm_password]);
+
+            // =============================
+            // HANDLE IMAGE UPLOAD
+            // =============================
+            if ($request->hasFile(Columns::image_url)) {
+
+                $file = $request->file(Columns::image_url);
+                $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+                // Store in /public/users
+                $file->move(public_path('users'), $fileName);
+
+                // Store relative path in DB
+                $input[Columns::image_url] = 'users/' . $fileName;
+
+            } else {
+                // Set default image if not provided
+                $input[Columns::image_url] = 'images/users/def_user.png'; // Make sure this file exists in public/users
+            }
 
             // Create user
             $user = User::create($input);
 
-            // Generate access token
+            // Generate token
             $token = $user->createToken($this->tokenName)->accessToken;
 
-            $user->refresh();
+            // // Attach full image URL for API response
+            // $user->image_url = $user->image_url ? asset($user->image_url) : null;
 
-            // Success response
+            // Response
             $this->addSuccessResultKeyValue(Keys::TOKEN, $token);
             $this->addSuccessResultKeyValue(Keys::DATA, $user);
             $this->addSuccessResultKeyValue(Keys::MESSAGE, Messages::USER_CREATED_SUCCESSFULLY);
+
             return $this->sendSuccessResult();
 
         } catch (\Exception $e) {

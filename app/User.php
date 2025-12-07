@@ -42,7 +42,7 @@ class User extends Authenticatable
         Columns::phone => "required|string|min:10|max:12|unique:" . Tables::USERS,
         Columns::password => "required|string|min:6",
         Columns::confirm_password => "required|string|same:" . Columns::password . "|min:6",
-        Columns::image_url => "nullable|string",
+        Columns::image_url => "nullable|image|mimes:jpg,jpeg,png,webp|max:2048",
         Columns::fcm_token => "nullable|string",
     ];
 }
