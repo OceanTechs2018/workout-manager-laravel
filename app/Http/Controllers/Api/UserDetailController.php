@@ -235,7 +235,7 @@ class UserDetailController extends BaseController
         // RESPONSE
         // ============================
         $this->addSuccessResultKeyValue(Keys::DATA, [
-            'user' => $authUser,
+            // 'user' => $authUser,
             'user_detail' => $detail,
             'goals' => $newGoals,
             'focus_areas' => $newFocus,
