@@ -178,4 +178,17 @@ class EndPoints
      */
     const get_user_home = '/user-home';
     const manager_dashboard = '/manager-dashboard';
+
+    /**
+     * ========================================================================
+     * Masetr Goal Route
+     * ========================================================================
+     */
+
+    const add_master_goal = 'master-goal/add';
+    const update_master_goal = 'master-goal/update/{id}';
+    const list_master_goal = 'master-goal/list';
+    const delete_master_goal = 'master-goal/delete/{id}';
+    const show_master_goal = 'master-goal/show/{id}';
+
 }

@@ -34,6 +34,7 @@ class Columns
     const category_id = 'category_id';
     const product_id = 'product_id';
     const setting_id = 'setting_id';
+    const goal_id = 'goal_id';
 
 
     /**
@@ -48,6 +49,7 @@ class Columns
     const password = 'password';
     const fcm_token = 'fcm_token';
     const is_admin = 'is_admin';
+    const is_notification_enable = 'is_notification_enable';
 
 
     /**
@@ -98,4 +100,17 @@ class Columns
     const kcal_burn = 'kcal_burn';
     const time_in_min = 'time_in_min';
     const is_popular = "is_popular";
+
+    /**
+     * Tables::User Details Table Columns
+     */
+    const gender = 'gender';
+    const user_name = 'user_name';
+    const age = 'age';
+    const current_weight_type = 'current_weight_type';
+    const target_weight_type = 'target_weight_type';
+    const current_weight = 'current_weight';
+    const target_weight = 'target_weight';
+    const height_type = 'height_type';
+    const height = 'height';
 }

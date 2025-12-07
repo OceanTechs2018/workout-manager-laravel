@@ -23,4 +23,8 @@ class Tables
     const WORKOUT_EXERCISES = 'workout_exercises';
     const CATEGORIES = 'categories';
     const CATEGORY_WORKOUTS = 'category_workouts';
+    const USER_DETAILS = 'user_details';
+    const MASTER_GOALS = 'master_goals';
+    const USER_GOALS = 'user_goals';
+    const USER_FOCUS_AREAS = 'user_focus_areas';
 }

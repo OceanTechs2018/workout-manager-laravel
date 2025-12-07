@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\ExerciseFocusAreaController;
 use App\Http\Controllers\Api\ExerciseKeyTipController;
 use App\Http\Controllers\Api\FocusAreaController;
 use App\Http\Controllers\Api\ManagerDashboardController;
+use App\Http\Controllers\Api\MasterGoalController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserDashboardController;
 use App\Http\Controllers\Api\WorkoutController;
@@ -231,3 +232,10 @@ Route::post(EndPoints::user_logout, [UserController::class, 'logout']);
 Route::get(EndPoints::user_list, [UserController::class, 'index']);
 
 Route::post('config-command', [ConfigController::class, 'runCommand']);
+
+Route::post(EndPoints::add_master_goal, [MasterGoalController::class, 'store']);
+Route::get(EndPoints::list_master_goal, [MasterGoalController::class, 'index']);
+Route::delete(EndPoints::delete_master_goal, [MasterGoalController::class, 'destroy']);
+Route::get(EndPoints::show_master_goal, [MasterGoalController::class, 'show']);
+Route::post(EndPoints::update_master_goal, [MasterGoalController::class, 'update']);
+
