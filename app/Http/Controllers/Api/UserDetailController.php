@@ -148,12 +148,6 @@ class UserDetailController extends BaseController
         // VALIDATION RULES
         // ============================
         $rules = [
-                // User Table Fields
-            Columns::name => 'sometimes|string|max:255',
-            Columns::email => 'sometimes|email|unique:users,email,' . $authUser->id,
-            Columns::phone => 'sometimes|string|max:20|unique:users,phone,' . $authUser->id,
-            Columns::image_url => 'sometimes|file|mimes:jpg,jpeg,png,webp|max:5000',
-
                 // User Detail Fields
             Columns::gender => 'required|in:' . Enums::MALE . ',' . Enums::FEMALE,
             Columns::user_name => 'required|string|max:255',
@@ -170,40 +164,12 @@ class UserDetailController extends BaseController
 
             'focus_area_ids' => 'nullable|array',
             'focus_area_ids.*' => 'integer|exists:' . Tables::FOCUS_AREAS . ',id',
-
-            Columns::is_notification_enable => 'required|boolean',
         ];
 
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return $this->sendValidationError($validator->errors());
-        }
-
-        // ============================
-        // UPDATE USER TABLE
-        // ============================
-        $updateUser = [];
-
-        if ($request->filled(Columns::name))
-            $updateUser[Columns::name] = $request->name;
-        if ($request->filled(Columns::email))
-            $updateUser[Columns::email] = $request->email;
-        if ($request->filled(Columns::phone))
-            $updateUser[Columns::phone] = $request->phone;
-
-        // ---------- IMAGE UPLOAD ----------
-        if ($request->hasFile(Columns::image_url)) {
-            $file = $request->file(Columns::image_url);
-            $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-
-            $file->move(public_path('users'), $fileName);
-
-            $updateUser[Columns::image_url] = 'users/' . $fileName;
-        }
-
-        if (!empty($updateUser)) {
-            $authUser->update($updateUser);
         }
 
         // ============================
@@ -264,12 +230,6 @@ class UserDetailController extends BaseController
                 Columns::focus_area_id => $focusId,
             ]);
         }
-
-        // ============================
-        // NOTIFICATION FLAG
-        // ============================
-        $authUser->is_notification_enable = $request->is_notification_enable;
-        $authUser->save();
 
         // ============================
         // RESPONSE

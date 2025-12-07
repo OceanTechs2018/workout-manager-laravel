@@ -242,6 +242,7 @@ Route::group(["middleware" => "auth:api"], function () {
 
     Route::post(EndPoints::add_user_detail, [UserDetailController::class, 'store']);
     Route::post(EndPoints::update_user_detail, [UserDetailController::class, 'update']);
+    Route::post(EndPoints::user_updateProfile, [UserController::class, 'update']);
     Route::get(EndPoints::user_detail, [UserDetailController::class, 'showProfile']);
 
 });

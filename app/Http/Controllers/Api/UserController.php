@@ -191,4 +191,72 @@ class UserController extends BaseController
 
         return $this->sendSuccessResult();
     }
+
+    public function update(Request $request)
+    {
+        $authUser = auth()->user();
+
+        if (!$authUser) {
+            $this->addFailResultKeyValue(Keys::ERROR, "Unauthorized user.");
+            return $this->sendFailResult();
+        }
+
+        // Validation rules for update
+        $rules = [
+            Columns::name => 'sometimes|string|max:255',
+            Columns::email => 'sometimes|email|unique:users,email,' . $authUser->id,
+            Columns::phone => 'sometimes|string|max:20|unique:users,phone,' . $authUser->id,
+            Columns::image_url => 'sometimes|image|mimes:jpg,jpeg,png',
+        ];
+
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return $this->sendValidationError($validator->errors());
+        }
+
+        try {
+
+            // Clean input array
+            $input = $request->only([
+                Columns::name,
+                Columns::email,
+                Columns::phone
+            ]);
+
+            // =============================
+            // HANDLE IMAGE UPLOAD
+            // =============================
+            if ($request->hasFile(Columns::image_url)) {
+
+                // Delete old image if exists & not default
+                if ($authUser->image_url && file_exists(public_path($authUser->image_url)) && $authUser->image_url !== 'images/users/def_user.png') {
+                    unlink(public_path($authUser->image_url));
+                }
+
+                $file = $request->file(Columns::image_url);
+                $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+                $file->move(public_path('users'), $fileName);
+
+                $input[Columns::image_url] = 'users/' . $fileName;
+
+            }
+
+            // Update user
+            $authUser->update($input);
+
+            // Response
+            $this->addSuccessResultKeyValue(Keys::DATA, $authUser);
+            $this->addSuccessResultKeyValue(Keys::MESSAGE, "User updated successfully.");
+
+            return $this->sendSuccessResult();
+
+        } catch (\Exception $e) {
+
+            $this->addFailResultKeyValue(Keys::ERROR, $e->getMessage());
+            return $this->sendFailResult();
+        }
+    }
+
 }
