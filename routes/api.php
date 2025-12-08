@@ -216,6 +216,7 @@ Route::delete(EndPoints::delete_workout_exercise, [WorkoutExerciseController::cl
  */
 Route::get(EndPoints::get_user_home, [UserDashboardController::class, 'userHomeApi']);
 Route::get(EndPoints::manager_dashboard, [ManagerDashboardController::class, 'index']);
+Route::get(EndPoints::user_creation_history, [ManagerDashboardController::class, 'userCreationStats']);
 
 // User Authentication
 

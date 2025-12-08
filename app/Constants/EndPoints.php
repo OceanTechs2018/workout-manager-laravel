@@ -199,4 +199,5 @@ class EndPoints
 
     const add_user_detail = 'user-detail/add';
     const update_user_detail = 'user-detail/update';
+    const user_creation_history = 'user-create/history';
 }
