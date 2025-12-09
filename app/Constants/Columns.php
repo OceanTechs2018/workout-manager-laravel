@@ -68,6 +68,7 @@ class Columns
     const male_video_path = 'male_video_path';
     const female_video_path = 'female_video_path';
     const preparation_text = 'preparation_text';
+    const description = 'description';
 
     /**
      * Tables::EXERCISE_FOCUS_AREAS Table Columns

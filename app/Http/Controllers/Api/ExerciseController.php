@@ -67,6 +67,7 @@ class ExerciseController extends BaseController
             Columns::preparation_text => 'nullable|string',
             Columns::execution_point => 'required|string',
             Columns::key_tips => 'required|string',
+            Columns::description => 'nullable',
 
             // NEW VALIDATIONS
             'focus_area_ids' => 'nullable|array',
@@ -126,6 +127,7 @@ class ExerciseController extends BaseController
             Columns::preparation_text => $request->input(Columns::preparation_text),
             Columns::execution_point => $request->input(Columns::execution_point),
             Columns::key_tips => $request->input(Columns::key_tips),
+            Columns::description => $request->input(Columns::description),
         ]);
 
         /*
@@ -194,6 +196,7 @@ class ExerciseController extends BaseController
             Columns::preparation_text => 'nullable|string',
             Columns::execution_point => 'nullable|string',
             Columns::key_tips => 'nullable|string',
+            Columns::description => 'nullable',
 
             // NEW VALIDATION
             'focus_area_ids' => 'nullable|array',
@@ -279,6 +282,7 @@ class ExerciseController extends BaseController
         $exercise->preparation_text = $request->input(Columns::preparation_text, $exercise->preparation_text);
         $exercise->execution_point = $request->input(Columns::execution_point, $exercise->execution_point);
         $exercise->key_tips = $request->input(Columns::key_tips, $exercise->key_tips);
+        $exercise->description = $request->input(Columns::description, $exercise->description);
 
         /*
         |--------------------------------------------------------------------------
