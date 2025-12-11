@@ -21,10 +21,12 @@ class ExerciseController extends BaseController
     {
         $focusAreaId = $request->input('focus_area_id');
 
-        $query = Exercise::with(['equipments', 'focusAreas'])->latest();
+        // Sort by exercise name ascending (A → Z)
+        $query = Exercise::with(['equipments', 'focusAreas'])
+            ->orderBy('name', 'ASC');
 
+        // Focus area filter
         if ($focusAreaId) {
-            // Filter by focus area: only exercises that have this focus area
             $query = $query->whereHas('focusAreas', function ($q) use ($focusAreaId) {
                 $q->where('focus_area_id', $focusAreaId);
             });
@@ -33,10 +35,12 @@ class ExerciseController extends BaseController
         // If page=0 → return all records
         if ((int) $request->input('page', 0) === 0) {
             $exercises = $query->get();
+
             if ($exercises->isEmpty()) {
                 $this->addFailResultKeyValue(Keys::MESSAGE, Messages::NO_DATA_FOUND);
                 return $this->sendFailResult();
             }
+
             $this->addSuccessResultKeyValue(Keys::DATA, $exercises);
             return $this->sendSuccessResult();
         }
