@@ -51,9 +51,6 @@ class EquipmentController extends BaseController
     /**
      * Store a newly created resource in storage.
      */
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $rules = [
@@ -67,10 +64,21 @@ class EquipmentController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        // Generate name from display_name
-        $generatedName = Str::of($request->input(Columns::display_name))
+        /*
+        |--------------------------------------------------------------------------
+        | GENERATE NAME (SLUG)
+        |--------------------------------------------------------------------------
+        */
+        $name = Str::of($request->input(Columns::display_name))
             ->lower()
-            ->replace(' ', '_');
+            ->replaceMatches('/\s+/', '_')
+            ->__toString();
+
+        // Check for duplicate
+        if (Equipment::where(Columns::name, $name)->exists()) {
+            $this->addFailResultKeyValue(Keys::MESSAGE, 'Equipment with this name already exists.');
+            return $this->sendFailResult();
+        }
 
         // Upload image
         $imageFile = $request->file(Columns::image_url);
@@ -80,7 +88,7 @@ class EquipmentController extends BaseController
 
         // Create record
         $equipment = Equipment::create([
-            Columns::name => $generatedName,
+            Columns::name => $name,
             Columns::display_name => $request->input(Columns::display_name),
             Columns::image_url => $imagePath,
         ]);
@@ -129,30 +137,48 @@ class EquipmentController extends BaseController
             return $this->sendValidationError($validator->errors());
         }
 
-        // Generate new name from display_name
-        $generatedName = Str::of($request->input(Columns::display_name))
+        /*
+        |--------------------------------------------------------------------------
+        | GENERATE NAME
+        |--------------------------------------------------------------------------
+        */
+        $name = Str::of($request->input(Columns::display_name))
             ->lower()
-            ->replace(' ', '_');
+            ->replaceMatches('/\s+/', '_')
+            ->__toString();
 
-        // If new image uploaded, delete old and upload new
+        // Check for duplicate (excluding current record)
+        $exists = Equipment::where(Columns::name, $name)
+            ->where(Columns::id, '!=', $equipment->id)
+            ->exists();
+
+        if ($exists) {
+            $this->addFailResultKeyValue(Keys::MESSAGE, 'Equipment with this name already exists.');
+            return $this->sendFailResult();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | IMAGE UPDATE (OPTIONAL)
+        |--------------------------------------------------------------------------
+        */
         if ($request->hasFile(Columns::image_url)) {
 
-            // delete old image
+            // Delete old image
             if ($equipment->image_url && file_exists(public_path($equipment->image_url))) {
                 unlink(public_path($equipment->image_url));
             }
 
-            // upload new image
+            // Upload new image
             $imageFile = $request->file(Columns::image_url);
             $imageFileName = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
             $imageFile->move(public_path('equipment'), $imageFileName);
-            $imagePath = 'equipment/' . $imageFileName;
 
-            $equipment->image_url = $imagePath;
+            $equipment->image_url = 'equipment/' . $imageFileName;
         }
 
         // Update fields
-        $equipment->name = $generatedName;
+        $equipment->name = $name;
         $equipment->display_name = $request->input(Columns::display_name);
 
         $equipment->save();
