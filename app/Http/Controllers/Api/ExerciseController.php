@@ -61,107 +61,94 @@ class ExerciseController extends BaseController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        $rules = [
-            Columns::display_name => 'required|string|max:255',
-            Columns::image_url => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-            Columns::male_video_path => 'required|file|mimes:mp4,mov,avi|max:20480',
-            Columns::female_video_path => 'required|file|mimes:mp4,mov,avi|max:20480',
-            Columns::preparation_text => 'nullable|string',
-            Columns::execution_point => 'required|string',
-            Columns::key_tips => 'required|string',
-            Columns::description => 'nullable',
+   public function store(Request $request)
+   {
+       $rules = [
+           Columns::display_name => 'required|string|max:255',
+           Columns::image_url => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+           Columns::male_video_path => 'required|file|mimes:mp4,mov,avi|max:20480',
+           Columns::female_video_path => 'required|file|mimes:mp4,mov,avi|max:20480',
+           Columns::preparation_text => 'nullable|string',
+           Columns::execution_point => 'required|string',
+           Columns::key_tips => 'required|string',
+           Columns::description => 'nullable',
 
-            // NEW VALIDATIONS
-            'focus_area_ids' => 'nullable|array',
-            'focus_area_ids.*' => 'integer|exists:focus_areas,id',
+           'focus_area_ids' => 'nullable|array',
+           'focus_area_ids.*' => 'integer|exists:focus_areas,id',
 
-            'equipment_ids' => 'nullable|array',
-            'equipment_ids.*' => 'integer|exists:equipments,id',
-        ];
+           'equipment_ids' => 'nullable|array',
+           'equipment_ids.*' => 'integer|exists:equipments,id',
+       ];
 
-        $validator = Validator::make($request->all(), $rules);
+       $validator = Validator::make($request->all(), $rules);
 
-        if ($validator->fails()) {
-            return $this->sendValidationError($validator->errors());
-        }
+       if ($validator->fails()) {
+           return $this->sendValidationError($validator->errors());
+       }
 
-        // Generate name
-        $generatedName = Str::of($request->input(Columns::display_name))
-            ->lower()
-            ->replace(' ', '_');
+       // Generate name
+       $generatedName = Str::of($request->input(Columns::display_name))
+           ->lower()
+           ->replace(' ', '_');
 
-        /*
-        |--------------------------------------------------------------------------
-        | Upload Image
-        |--------------------------------------------------------------------------
-        */
-        $imageFile = $request->file(Columns::image_url);
-        $imageFileName = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
-        $imageFile->move(public_path('exercises/images'), $imageFileName);
-        $imagePath = 'exercises/images/' . $imageFileName;
+       // -------------------------------------------------
+       // IMAGE UPLOAD (OPTIONAL)
+       // -------------------------------------------------
+       $imagePath = null;
+       if ($request->hasFile(Columns::image_url)) {
+           $imageFile = $request->file(Columns::image_url);
+           $imageFileName = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
+           $imageFile->move(public_path('exercises/images'), $imageFileName);
+           $imagePath = 'exercises/images/' . $imageFileName;
+       }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Upload Videos
-        |--------------------------------------------------------------------------
-        */
-        $maleFile = $request->file(Columns::male_video_path);
-        $maleFileName = Str::uuid() . '.' . $maleFile->getClientOriginalExtension();
-        $maleFile->move(public_path('exercises/male'), $maleFileName);
-        $malePath = 'exercises/male/' . $maleFileName;
+       // -------------------------------------------------
+       // VIDEO UPLOADS (REQUIRED)
+       // -------------------------------------------------
+       $maleFile = $request->file(Columns::male_video_path);
+       $maleFileName = Str::uuid() . '.' . $maleFile->getClientOriginalExtension();
+       $maleFile->move(public_path('exercises/male'), $maleFileName);
+       $malePath = 'exercises/male/' . $maleFileName;
 
-        $femaleFile = $request->file(Columns::female_video_path);
-        $femaleFileName = Str::uuid() . '.' . $femaleFile->getClientOriginalExtension();
-        $femaleFile->move(public_path('exercises/female'), $femaleFileName);
-        $femalePath = 'exercises/female/' . $femaleFileName;
+       $femaleFile = $request->file(Columns::female_video_path);
+       $femaleFileName = Str::uuid() . '.' . $femaleFile->getClientOriginalExtension();
+       $femaleFile->move(public_path('exercises/female'), $femaleFileName);
+       $femalePath = 'exercises/female/' . $femaleFileName;
 
-        /*
-        |--------------------------------------------------------------------------
-        | Create Exercise
-        |--------------------------------------------------------------------------
-        */
-        $exercise = Exercise::create([
-            Columns::name => $generatedName,
-            Columns::display_name => $request->input(Columns::display_name),
-            Columns::image_url => $imagePath,
-            Columns::male_video_path => $malePath,
-            Columns::female_video_path => $femalePath,
-            Columns::preparation_text => $request->input(Columns::preparation_text),
-            Columns::execution_point => $request->input(Columns::execution_point),
-            Columns::key_tips => $request->input(Columns::key_tips),
-            Columns::description => $request->input(Columns::description),
-        ]);
+       // -------------------------------------------------
+       // CREATE EXERCISE
+       // -------------------------------------------------
+       $exercise = Exercise::create([
+           Columns::name => $generatedName,
+           Columns::display_name => $request->input(Columns::display_name),
+           Columns::image_url => $imagePath, // will be null if not uploaded
+           Columns::male_video_path => $malePath,
+           Columns::female_video_path => $femalePath,
+           Columns::preparation_text => $request->input(Columns::preparation_text),
+           Columns::execution_point => $request->input(Columns::execution_point),
+           Columns::key_tips => $request->input(Columns::key_tips),
+           Columns::description => $request->input(Columns::description),
+       ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Insert Pivot: Exercise–FocusAreas
-        |--------------------------------------------------------------------------
-        */
-        if ($request->has('focus_area_ids')) {
-            $exercise->focusAreas()->sync($request->focus_area_ids);
-        }
+       // -------------------------------------------------
+       // PIVOT RELATIONS
+       // -------------------------------------------------
+       if ($request->has('focus_area_ids')) {
+           $exercise->focusAreas()->sync($request->focus_area_ids);
+       }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Insert Pivot: Exercise–Equipments
-        |--------------------------------------------------------------------------
-        */
-        if ($request->has('equipment_ids')) {
-            $exercise->equipments()->sync($request->equipment_ids);
-        }
+       if ($request->has('equipment_ids')) {
+           $exercise->equipments()->sync($request->equipment_ids);
+       }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Response
-        |--------------------------------------------------------------------------
-        */
-        $this->addSuccessResultKeyValue(Keys::DATA, $exercise->load(['focusAreas', 'equipments']));
-        $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Exercise created successfully.');
+       // -------------------------------------------------
+       // RESPONSE
+       // -------------------------------------------------
+       $this->addSuccessResultKeyValue(Keys::DATA, $exercise->load(['focusAreas', 'equipments']));
+       $this->addSuccessResultKeyValue(Keys::MESSAGE, 'Exercise created successfully.');
 
-        return $this->sendSuccessResult();
-    }
+       return $this->sendSuccessResult();
+   }
 
 
     /**
