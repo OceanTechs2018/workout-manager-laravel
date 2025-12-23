@@ -1,5 +1,17 @@
 <?php
 
+// Check if the request is for the root URL (or index.php specifically)
+// and if the  index.html exists.
+if (isset($_SERVER['REQUEST_URI']) && ($_SERVER['REQUEST_URI'] === '/' || $_SERVER['REQUEST_URI'] === '/index.php')) {
+    $flutterIndex = __DIR__ . '/index.html';
+    if (file_exists($flutterIndex)) {
+        echo file_get_contents($flutterIndex);
+        exit(); // Stop execution here to serve
+    }
+}
+
+
+
 /**
  * Laravel - A PHP Framework For Web Artisans
  *
