@@ -12,6 +12,7 @@ if (isset($_SERVER['REQUEST_URI']) && ($_SERVER['REQUEST_URI'] === '/' || $_SERV
 
 
 
+
 /**
  * Laravel - A PHP Framework For Web Artisans
  *
