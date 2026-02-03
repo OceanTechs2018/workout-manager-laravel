@@ -25,6 +25,8 @@ class EndPoints
     const user_activeUsers = '/user/activeUsers';
     const user_newUsers = '/user/newUsers';
     const user_blockUsers = '/user/blockUsers';
+    const user_softdelete = '/user/softdelete';
+    const user_delete_from_email = '/user/delete/fromemail';
 
 
     /**
