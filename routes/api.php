@@ -246,4 +246,7 @@ Route::group(["middleware" => "auth:api"], function () {
     Route::post(EndPoints::user_updateProfile, [UserController::class, 'update']);
     Route::get(EndPoints::user_detail, [UserDetailController::class, 'showProfile']);
 
+    Route::delete(EndPoints::user_softdelete, [UserController::class, 'softDeleteUser']);
 });
+
+    Route::delete(EndPoints::user_delete_from_email, [UserController::class, 'deletefromemail']);

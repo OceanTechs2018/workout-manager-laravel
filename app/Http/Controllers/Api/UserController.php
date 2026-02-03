@@ -327,4 +327,73 @@ class UserController extends BaseController
         }
     }
 
+    /**
+     * Delete account from their email id without auth.
+     * Check condition: if any bill is pending or declined, do not delete.
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function deletefromemail(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            Columns::email => 'required|email',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendValidationError($validator->errors());
+        }
+
+        $email = $request->input(Columns::email);
+
+        // Find the user by email
+        $user = User::where(Columns::email, $email)->first();
+
+        // Check if user exists
+        if (!$user) {
+            $this->addFailResultKeyValue(Keys::MESSAGE, Messages::USER_NOT_FOUND);
+            return $this->sendFailResult();
+        }
+
+        try {
+            // Perform soft delete
+            $user->delete();
+
+            $this->addSuccessResultKeyValue(Keys::MESSAGE, Messages::RECORD_DELETED_SUCCESSFULLY);
+            return $this->sendSuccessResult();
+        } catch (\Exception $e) {
+            // Handle unexpected exceptions
+            $this->addFailResultKeyValue(Keys::MESSAGE, $e->getMessage());
+            return $this->sendFailResult();
+        }
+    }
+
+    /**
+     * Soft Delete Authenticated User
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function softDeleteUser(Request $request)
+    {
+        // Get authenticated user
+        $user = Auth::user();
+
+        // Check if user exists
+        if (!$user) {
+            $this->addFailResultKeyValue(Keys::ERROR, Messages::USER_NOT_FOUND);
+            return $this->sendFailResult();
+        }
+
+        try {
+            // Perform soft delete
+            $user->delete();
+
+            $this->addSuccessResultKeyValue(Keys::MESSAGE, Messages::RECORD_DELETED_SUCCESSFULLY);
+            return $this->sendSuccessResult();
+        } catch (\Exception $e) {
+            // Handle unexpected exceptions
+            $this->addFailResultKeyValue(Keys::ERROR, $e->getMessage());
+            return $this->sendFailResult();
+        }
+    }
 }
